@@ -138,7 +138,7 @@ function blinks_register() {
 function blinks_load() {
 	blinks_loader(
 		array(
-			'class-wp-bookmarks.php',
+			'class-wp-bookmark.php',
 			'functions.php',
 		)
 	);
