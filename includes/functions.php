@@ -15,7 +15,7 @@
  * @return int|false Meta ID on success, false on failure.
  */
 function add_link_meta( $link_id, $meta_key, $meta_value, $unique = false ) {
-	return add_metadata( 'links', $link_id, $meta_key, $meta_value, $unique );
+	return add_metadata( 'link', $link_id, $meta_key, $meta_value, $unique );
 }
 
 /**
@@ -31,7 +31,7 @@ function add_link_meta( $link_id, $meta_key, $meta_value, $unique = false ) {
  * @return bool True on success, false on failure.
  */
 function delete_link_meta( $link_id, $meta_key, $meta_value = '' ) {
-	return delete_metadata( 'links', $link_id, $meta_key, $meta_value );
+	return delete_metadata( 'link', $link_id, $meta_key, $meta_value );
 }
 
 /**
@@ -43,7 +43,7 @@ function delete_link_meta( $link_id, $meta_key, $meta_value = '' ) {
  * @return mixed Will be an array if $single is false. Will be value of meta data field if $single is true.
  */
 function get_link_meta( $link_id, $key = '', $single = false ) {
-	return get_metadata( 'links', $link_id, $key, $single );
+	return get_metadata( 'link', $link_id, $key, $single );
 }
 
 /**
@@ -61,7 +61,7 @@ function get_link_meta( $link_id, $key = '', $single = false ) {
  * @return int|bool Meta ID if the key didn't exist, true on successful update, false on failure.
  */
 function update_link_meta( $link_id, $meta_key, $meta_value, $prev_value = '' ) {
-	return update_metadata( 'links', $link_id, $meta_key, $meta_value, $prev_value );
+	return update_metadata( 'link', $link_id, $meta_key, $meta_value, $prev_value );
 }
 
 /**

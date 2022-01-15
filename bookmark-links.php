@@ -41,7 +41,7 @@ function blinks_create_tables() {
 		$charset_collate = $wpdb->get_charset_collate();
 	}
 
-	$table_name       = $wpdb->prefix . 'linksmeta';
+	$table_name       = $wpdb->prefix . 'linkmeta';
 	$max_index_length = 191;
 
 	$schema = "CREATE TABLE $table_name (
@@ -59,8 +59,8 @@ function blinks_create_tables() {
 
 function blinks_metadata_api() {
 	global $wpdb;
-	$wpdb->linksmeta = $wpdb->prefix . 'linksmeta';
-	$wpdb->tables[]  = 'linksmeta';
+	$wpdb->linkmeta = $wpdb->prefix . 'linkmeta';
+	$wpdb->tables[]  = 'linkmeta';
 
 	return;
 }
@@ -94,6 +94,47 @@ function blinks_loader( $files, $dir = 'includes/' ) {
 	}
 }
 
+function blinks_register() {
+
+	$args = array(
+		'type' => 'string',
+		'description' => __( 'Date Link was Published', 'bookmark-links' ),
+		'single' => true
+	);
+	register_meta( 'link', 'link_published', $args );
+	
+	$args = array(
+		'type' => 'string',
+		'description' => __( 'Link Author Name', 'bookmark-links' ),
+		'single' => true
+	);
+	register_meta( 'link', 'link_author', $args );
+
+
+	$args = array(
+		'type' => 'string',
+		'description' => __( 'Link Author URL', 'bookmark-links' ),
+		'single' => true
+	);
+	register_meta( 'link', 'link_author_url', $args );
+
+	$args = array(
+		'type' => 'string',
+		'description' => __( 'Link Author Photo', 'bookmark-links' ),
+		'single' => true
+	);
+	register_meta( 'link', 'link_author_photo', $args );
+
+	$args = array(
+		'type' => 'string',
+		'description' => __( 'Link Publication', 'bookmark-links' ),
+		'single' => true
+	);
+	register_meta( 'link', 'link_publication', $args );
+
+
+}
+
 function blinks_load() {
 	blinks_loader(
 		array(
@@ -101,6 +142,7 @@ function blinks_load() {
 			'functions.php',
 		)
 	);
+	blinks_register();
 }
 
 add_action( 'plugins_loaded', 'blinks_load' );
