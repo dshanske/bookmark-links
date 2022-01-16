@@ -113,6 +113,13 @@ final class WP_Bookmark {
 	public $link_rss = '';
 
 	/**
+	 * The link's category.
+	 *
+	 * @var int[]
+	 */
+	public $link_category = array();
+
+	/**
 	 * Retrieve WP_Bookmark instance.
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
@@ -136,9 +143,13 @@ final class WP_Bookmark {
 				return false;
 			}
 
-			$_bookmark = sanitize_bookmark( $_bookmark, $filter );
+			$_bookmark->link_category = array_unique( wp_get_object_terms( $_bookmark->link_id, 'link_category', array( 'fields' => 'ids' ) ) );
+
 			wp_cache_add( $_bookmark->link_id, $_bookmark, 'bookmark' );
 		}
+
+		$_bookmark = sanitize_bookmark( $_bookmark, $filter );
+
 		return new WP_Bookmark( $_bookmark );
 	}
 
@@ -176,17 +187,15 @@ final class WP_Bookmark {
 	 * @return mixed
 	 */
 	public function __get( $key ) {
-		if ( 'link_category' === $key ) {
-			if ( is_object_in_taxonomy( 'links', 'link_category' ) ) {
-				$terms = get_the_terms( $this, 'category' );
-			}
-
+		if ( 'tags_input' === $key ) {
+			$terms = wp_get_object_terms( $this->link_id, 'link_tag' );
 			if ( empty( $terms ) ) {
 				return array();
 			}
-
-			return wp_list_pluck( $terms, 'term_id' );
+			return wp_list_pluck( $terms, 'name' );
 		}
+
+		$value = get_link_meta( $this->link_id, $key, true );
 
 		return $value;
 	}

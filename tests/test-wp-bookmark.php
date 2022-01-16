@@ -13,10 +13,14 @@ class WPBookmarkTest extends WP_UnitTestCase {
 				),
 				true
 			);
+		add_link_meta( $link_id, 'test', 'testdata' );
 		$bookmark = get_bookmark( $link_id );
 		$bookmark_object = get_bookmark_object( $link_id );
 
 		$this->assertEquals( $bookmark_object, new WP_Bookmark( $bookmark ) );
+
+		// Test magic getter
+		$this->assertEquals( 'testdata', $bookmark_object->test );
 		
 		wp_delete_link( $link_id );
 	}
