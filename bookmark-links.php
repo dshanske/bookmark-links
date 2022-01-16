@@ -60,7 +60,7 @@ function blinks_create_tables() {
 function blinks_metadata_api() {
 	global $wpdb;
 	$wpdb->linkmeta = $wpdb->prefix . 'linkmeta';
-	$wpdb->tables[]  = 'linkmeta';
+	$wpdb->tables[] = 'linkmeta';
 
 	return;
 }
@@ -96,42 +96,74 @@ function blinks_loader( $files, $dir = 'includes/' ) {
 
 function blinks_register() {
 
+	register_taxonomy(
+		'link_tag',
+		'link',
+		array(
+			'hierarchical'         => false,
+			'labels'               => array(
+				'name'                       => __( 'Link Tags' ),
+				'singular_name'              => __( 'Link Tag' ),
+				'search_items'               => __( 'Search Link Tag' ),
+				'popular_items'              => null,
+				'all_items'                  => __( 'All Link Tags' ),
+				'edit_item'                  => __( 'Edit Link Tag' ),
+				'update_item'                => __( 'Update Link Tag' ),
+				'add_new_item'               => __( 'Add New Link Tag' ),
+				'new_item_name'              => __( 'New Link Tag Name' ),
+				'separate_items_with_commas' => null,
+				'add_or_remove_items'        => null,
+				'choose_from_most_used'      => null,
+				'back_to_items'              => __( '&larr; Go to Link Categories' ),
+			),
+			'capabilities'         => array(
+				'manage_terms' => 'manage_links',
+				'edit_terms'   => 'manage_links',
+				'delete_terms' => 'manage_links',
+				'assign_terms' => 'manage_links',
+			),
+			'query_var'            => false,
+			'rewrite'              => false,
+			'public'               => false,
+			'show_ui'              => true,
+			'meta_box_sanitize_cb' => 'taxonomy_meta_box_sanitize_cb_input',
+		)
+	);
+
 	$args = array(
-		'type' => 'string',
+		'type'        => 'string',
 		'description' => __( 'Date Link was Published', 'bookmark-links' ),
-		'single' => true
+		'single'      => true,
 	);
 	register_meta( 'link', 'link_published', $args );
-	
+
 	$args = array(
-		'type' => 'string',
+		'type'        => 'string',
 		'description' => __( 'Link Author Name', 'bookmark-links' ),
-		'single' => true
+		'single'      => true,
 	);
 	register_meta( 'link', 'link_author', $args );
 
-
 	$args = array(
-		'type' => 'string',
+		'type'        => 'string',
 		'description' => __( 'Link Author URL', 'bookmark-links' ),
-		'single' => true
+		'single'      => true,
 	);
 	register_meta( 'link', 'link_author_url', $args );
 
 	$args = array(
-		'type' => 'string',
+		'type'        => 'string',
 		'description' => __( 'Link Author Photo', 'bookmark-links' ),
-		'single' => true
+		'single'      => true,
 	);
 	register_meta( 'link', 'link_author_photo', $args );
 
 	$args = array(
-		'type' => 'string',
+		'type'        => 'string',
 		'description' => __( 'Link Publication', 'bookmark-links' ),
-		'single' => true
+		'single'      => true,
 	);
 	register_meta( 'link', 'link_publication', $args );
-
 
 }
 
@@ -139,6 +171,7 @@ function blinks_load() {
 	blinks_loader(
 		array(
 			'class-wp-bookmark.php',
+			'bookmark-links-metabox.php',
 			'functions.php',
 		)
 	);
@@ -146,3 +179,4 @@ function blinks_load() {
 }
 
 add_action( 'plugins_loaded', 'blinks_load' );
+

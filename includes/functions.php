@@ -67,14 +67,13 @@ function update_link_meta( $link_id, $meta_key, $meta_value, $prev_value = '' ) 
 /**
  * Retrieve Bookmark data
  *
- *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
  * @param int|WP_Bookmark $bookmark
- * @param string       $output   Optional. The required return type. One of OBJECT, ARRAY_A, or ARRAY_N, which
- *                               correspond to an stdClass object, an associative array, or a numeric array,
- *                               respectively. Default OBJECT.
- * @param string       $filter   Optional. How to sanitize bookmark fields. Default 'raw'.
+ * @param string          $output   Optional. The required return type. One of OBJECT, ARRAY_A, or ARRAY_N, which
+ *                                  correspond to an stdClass object, an associative array, or a numeric array,
+ *                                  respectively. Default OBJECT.
+ * @param string          $filter   Optional. How to sanitize bookmark fields. Default 'raw'.
  * @return array|object|null Type returned depends on $output value.
  */
 function get_bookmark_object( $bookmark, $output = OBJECT, $filter = 'raw' ) {
@@ -83,4 +82,31 @@ function get_bookmark_object( $bookmark, $output = OBJECT, $filter = 'raw' ) {
 		return new WP_Bookmark( $bookmark );
 	}
 }
-	
+
+function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
+	$link_id = (int) $link_id;
+	if ( ! $link_id ) {
+		return false;
+	}
+
+	$terms = get_object_term_cache( $link_id, $taxonomy );
+	if ( false === $terms ) {
+		$terms = wp_get_object_terms( $link_id, $taxonomy );
+		wp_cache_add( $link_id, wp_list_pluck( $terms, 'term_id' ), $taxonomy . '_relationships' );
+	}
+
+	if ( ! $terms ) {
+		return false;
+	}
+	if ( is_wp_error( $terms ) ) {
+		return $terms;
+	}
+	$term_names = array();
+	foreach ( $terms as $term ) {
+		$term_names[] = $term->name;
+	}
+
+	$terms_to_edit = esc_attr( implode( ',', $term_names ) );
+
+	return $terms_to_edit;
+}
