@@ -110,3 +110,45 @@ function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
 
 	return $terms_to_edit;
 }
+
+if ( ! function_exists( 'get_link_timestamp' ) ) {
+	/**
+	 * Retrieve link updated time as a Unix timestamp.
+	 *
+	 * Note that this function returns a true Unix timestamp, not summed with timezone offset
+	 * like older WP functions.
+	 *
+	 * @param int|WP_Bookmark $link  WP_Bookmark object or ID.
+	 * @return int|false Unix timestamp on success, false on failure.
+	 */
+	function get_link_timestamp( $link ) {
+		$datetime = get_link_datetime( $post );
+		if ( false === $datetime ) {
+			return false;
+		}
+		return $datetime->getTimestamp();
+	}
+}
+
+
+if ( ! function_exists( 'get_link_datetime' ) ) {
+	/**
+	 * Retrieve link updated time as a `DateTimeImmutable` object instance.
+	 *
+	 * The object will be set to the timezone from WordPress settings.
+	 *
+	 * @param int|WP_Bookmark $link  WP_Bookmark object or ID.
+	 * @return DateTimeImmutable|false Time object on success, false on failure.
+	 */
+	function get_link_datetime( $link ) {
+		$link = new WP_Bookmark( $link );
+		if ( ! $link ) {
+			return false;
+		}
+		$time = $link->link_updated;
+		if ( empty( $time ) || '0000-00-00 00:00:00' === $time ) {
+			return false;
+		}
+		return date_create_immutable_from_format( 'Y-m-d H:i:s', $time, wp_timezone() );
+	}
+}
