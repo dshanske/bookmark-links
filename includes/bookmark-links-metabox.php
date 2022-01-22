@@ -69,44 +69,26 @@ function blinks_parent_menu( $parent = '' ) {
 
 add_filter( 'parent_file', 'blinks_parent_menu' );
 
+function blinks_manage_link_tags_columns( $columns ) {
+	$columns['link_tags'] = __( 'Tags', 'bookmark-links' );
+	unset( $columns['posts'] );
+	return $columns;
+}
 
-/*
- * Function Hooks into the New and Update Link hooks to allow for using the same _POST properties as recognized by the save post functionality.
- */
-function save_link_data( $link_id ) {
-	if ( ! current_user_can( 'manage_links' ) ) {
+
+add_filter( 'manage_edit-link_tag_columns', 'blinks_manage_link_tags_columns' );
+
+function blinks_link_tag_column( $string, $name, $id ) {
+	if ( 'link_tags' !== $name ) {
 		return;
 	}
 
-	// Convert taxonomy input to term IDs, to avoid ambiguity.
-	if ( isset( $_POST['tax_input'] ) ) {
-		foreach ( (array) $_POST['tax_input'] as $taxonomy => $terms ) {
-			$tax_object = get_taxonomy( $taxonomy );
-			if ( $tax_object && isset( $tax_object->meta_box_sanitize_cb ) ) {
-				$_POST['tax_input'][ $taxonomy ] = call_user_func_array( $tax_object->meta_box_sanitize_cb, array( $taxonomy, $terms ) );
-				if ( current_user_can( $tax_object->cap->assign_terms ) ) {
-					wp_set_object_terms( $link_id, $_POST['tax_input'][ $taxonomy ], $taxonomy );
-				}
-			}
-		}
-	}
+	$term = get_term( $id, 'link_tag' );
 
-	if ( isset( $_POST['tags_input'] ) ) {
-		$tax_object = get_taxonomy( 'link_tag' );
-		if ( isset( $tax_object->meta_box_sanitize_cb ) ) {
-			$_POST['tags_input'] = call_user_func_array( $tax_object->meta_box_sanitize_cb, array( 'link_tag', $_POST['tags_input'] ) );
-		}
-	}
 
-	if ( ! empty( $_POST['meta_input'] ) ) {
-		foreach ( $_POST['meta_input'] as $field => $value ) {
-			$value = sanitize_text_field( $value );
-			$field = sanitize_key( $field );
-			update_post_meta( $post_ID, $field, $value );
-		}
-	}
+	$count = number_format_i18n( $term->count );
 
+	printf( "<a href='link-manager.php?taxonomy=link_tag&term=%s'>%s</a>", $term->slug, $count );
 }
 
-add_action( 'edit_link', 'save_link_data' );
-add_action( 'add_link', 'save_link_data' );
+add_filter( 'manage_link_tag_custom_column', 'blinks_link_tag_column', 10, 3 );
