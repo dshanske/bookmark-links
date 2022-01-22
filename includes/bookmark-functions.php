@@ -251,6 +251,53 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 }
 
 /**
+ * Updates a link into the database, or updates an existing link.
+ *
+ * @param array $linkdata {
+ *     Elements that make up the link to insert.
+ *
+ *     @type int    $link_id          Optional. The ID of the existing link if updating.
+ *     @type string $link_url         The URL the link points to.
+ *     @type string $link_name        The title of the link.
+ *     @type string $link_image       Optional. A URL of an image.
+ *     @type string $link_target      Optional. The target element for the anchor tag.
+ *     @type string $link_description Optional. A short description of the link.
+ *     @type string $link_visible     Optional. 'Y' means visible, anything else means not.
+ *     @type int    $link_owner       Optional. A user ID.
+ *     @type int    $link_rating      Optional. A rating for the link.
+ *     @type string $link_updated     Optional. When the link was last updated.
+ *     @type string $link_rel         Optional. A relationship of the link to you.
+ *     @type string $link_notes       Optional. An extended description of or notes on the link.
+ *     @type string $link_rss         Optional. A URL of an associated RSS feed.
+ *     @type int    $link_category    Optional. The term ID of the link category.
+ *                                    If empty, uses default link category.
+ * }
+ * @param bool  $wp_error Optional. Whether to return a WP_Error object on failure. Default false.
+ * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
+ */
+function blinks_update_bookmark( $linkdata, $wp_error = false ) {
+	$link_id = (int) $linkdata['link_id'];
+	$link    = blinks_get_bookmark( $link_id, ARRAY_A );
+	// Escape data pulled from DB.
+	$link = wp_slash( $link );
+
+	// Passed link category list overwrites existing category list if not empty.
+	if ( isset( $linkdata['link_category'] ) && is_array( $linkdata['link_category'] )
+		   && count( $linkdata['link_category'] ) > 0
+	) {
+		$link_cats = $linkdata['link_category'];
+	} else {
+		$link_cats = $link['link_category'];
+	}
+
+	// Merge old and new fields with new fields overwriting old ones.
+	$linkdata                      = array_merge( $link, $linkdata );
+	$linkdata['link_category'] = $link_cats;
+	return blinks_insert_bookmark( $linkdata );
+}
+
+
+/**
  * Retrieves the list of bookmarks
  *
  * Wrapper around Blinks_Bookmark_Query.
@@ -262,7 +309,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
  * }
  */
 function blinks_get_bookmarks( $args = array() ) {
-	$query = new Blinks_Bookmark_Query;
+	$query = new Blinks_Bookmark_Query();
 	return $query->query( $args );
 }
 
@@ -362,7 +409,7 @@ if ( ! function_exists( 'prime_bookmark_caches' ) ) {
 		if ( ! empty( $non_cached_ids ) ) {
 			$fresh_bookmarks = $wpdb->get_results( sprintf( "SELECT $wpdb->links.* FROM $wpdb->links WHERE link_id IN (%s)", implode( ',', array_map( 'intval', $non_cached_ids ) ) ) );
 
-			foreach( $fresh_bookmarks as $key => $bookmark ) {
+			foreach ( $fresh_bookmarks as $key => $bookmark ) {
 				$fresh_bookmarks[ $key ]->link_category = array_unique( wp_get_object_terms( $bookmark->link_id, 'link_category', array( 'fields' => 'ids' ) ) );
 			}
 
