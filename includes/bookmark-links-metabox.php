@@ -70,7 +70,7 @@ function blinks_parent_menu( $parent = '' ) {
 add_filter( 'parent_file', 'blinks_parent_menu' );
 
 function blinks_manage_link_tags_columns( $columns ) {
-	$columns['link_tags'] = __( 'Tags', 'bookmark-links' );
+	$columns['link_tags'] = __( 'Links', 'default' );
 	unset( $columns['posts'] );
 	return $columns;
 }
