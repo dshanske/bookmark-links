@@ -49,7 +49,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @global string $order
 	 */
 	public function prepare_items() {
-		global $cat_id, $s, $orderby, $order;
+		global $cat_id, $s, $orderby, $order, $term, $taxonomy;
 
 		wp_reset_vars( array( 'action', 'cat_id', 'link_id', 'orderby', 'order', 's', 'taxonomy', 'term' ) );
 
@@ -73,10 +73,11 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		}
 
 		if ( ! empty( $taxonomy ) ) {
-			$args['tax_input'] = array(
-				'taxonomy' => $taxonomy,
-				'term'     => $term,
-			);
+			$args['taxonomy'] = $taxonomy;
+		}
+
+		if ( ! empty( $term ) ) {
+			$args['term'] = $term;
 		}
 
 		$this->items = blinks_get_bookmarks( $args );
@@ -220,6 +221,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'url'     => 'url',
 			'visible' => 'visible',
 			'rating'  => 'rating',
+			'updated' => 'updated'
 		);
 	}
 

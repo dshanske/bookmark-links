@@ -27,6 +27,20 @@ class Blinks_Bookmark_Query {
 	public $meta_query = false;
 
 	/**
+	 * Taxonomy query, as passed to get_tax_sql()
+	 *
+	 * @var WP_Tax_Query A taxonomy query instance.
+	 */
+	public $tax_query;
+
+	/**
+	 * Tax query clauses.
+	 *
+	 * @var array
+	 */
+	protected $tax_query_clauses;
+
+	/**
 	 * Metadata query clauses.
 	 *
 	 * @var array
@@ -114,6 +128,11 @@ class Blinks_Bookmark_Query {
 	 *     @type int[]        $bookmark__not_in           Array of link IDs to exclude. Default empty.
 	 *     @type bool         $count                     Whether to return a bookmark count (true) or array of
 	 *                                                   bookmark objects (false). Default false.
+	 *     @type int|string   $category                  Category ID or comma-separated list of IDs (this or any children).
+	 *     @type int[]        $category__and           An array of category IDs (AND in).
+	 *     @type int[]        $category__in            An array of category IDs (OR in, no children).
+	 *     @type int[]        $category__not_in        An array of category IDs (NOT in).
+	 *     @type string       $category_name           Use category slug (not name, this or any children).
 	 *     @type array        $date_query                Date query clauses to limit bookmarks by. See WP_Date_Query.
 	 *                                                   Default null.
 	 *     @type string       $fields                    Fields to return. Accepts:
@@ -159,6 +178,7 @@ class Blinks_Bookmark_Query {
 	 *                                                   an object cache. Default is 'core'.
 	 *     @type bool         $update_bookmark_meta_cache Whether to prime the metadata cache for found bookmarks.
 	 *                                                   Default true.
+	 *     @type string       $search                    Search terms. Will be SQL-formatted with wildcards before and after and searched in 'link_url', 'link_name' and 'link_description'.
 	 * }
 	 */
 	public function __construct( $query = '' ) {
@@ -169,6 +189,10 @@ class Blinks_Bookmark_Query {
 			'owner__not_in'              => '',
 			'bookmark__in'               => '',
 			'bookmark__not_in'           => '',
+			'category'                   => '',
+			'tag'                        => '',
+			'taxonomy'                   => '',
+			'term'                       => '',
 			'count'                      => false,
 			'date_query'                 => null, // See WP_Date_Query.
 			'fields'                     => '',
@@ -186,7 +210,7 @@ class Blinks_Bookmark_Query {
 			'order'                      => 'ASC',
 			'cache_domain'               => 'core',
 			'update_bookmark_meta_cache' => true,
-			'search'                     => ''
+			'search'                     => '',
 		);
 
 		if ( ! empty( $query ) ) {
@@ -241,6 +265,9 @@ class Blinks_Bookmark_Query {
 		$this->meta_query = new WP_Meta_Query();
 		$this->meta_query->parse_query_vars( $this->query_vars );
 
+		// Parse tax query.
+		$this->tax_query = $this->parse_tax_query( $this->query_vars );
+
 		/**
 		 * Fires before bookmarks are retrieved.
 		 *
@@ -252,6 +279,10 @@ class Blinks_Bookmark_Query {
 		$this->meta_query->parse_query_vars( $this->query_vars );
 		if ( ! empty( $this->meta_query->queries ) ) {
 			$this->meta_query_clauses = $this->meta_query->get_sql( 'link', $wpdb->links, 'link_id', $this );
+		}
+
+		if ( ! empty( $this->tax_query->queries ) ) {
+			$this->tax_query_clauses = $this->tax_query->get_sql( $wpdb->links, 'link_id' );
 		}
 
 		$bookmark_data = null;
@@ -458,11 +489,11 @@ class Blinks_Bookmark_Query {
 			$this->sql_clauses['where']['rating'] = $wpdb->prepare( 'link_rating = %d', $this->query_vars['rating'] );
 		}
 
-		// Falsey search strings are ignored.
+		// False search strings are ignored.
 		if ( strlen( $this->query_vars['search'] ) ) {
 			$search_sql = $this->get_search_sql(
 				$this->query_vars['search'],
-				array( 'link_name', 'link_url', 'link_note', 'link_description' )
+				array( 'link_name', 'link_url', 'link_description' )
 			);
 
 			// Strip leading 'AND'.
@@ -493,6 +524,17 @@ class Blinks_Bookmark_Query {
 			}
 		}
 
+		if ( ! empty( $this->tax_query_clauses ) ) {
+			$join .= $this->tax_query_clauses['join'];
+
+			// Strip leading 'AND'.
+			$this->sql_clauses['where']['tax_query'] = preg_replace( '/^\s*AND\s*/', '', $this->tax_query_clauses['where'] );
+
+			if ( ! $this->query_vars['count'] ) {
+				$groupby = "{$wpdb->links}.link_id";
+			}
+		}
+						          
 		if ( ! empty( $this->query_vars['date_query'] ) && is_array( $this->query_vars['date_query'] ) ) {
 			$this->date_query                         = new WP_Date_Query( $this->query_vars['date_query'], 'link_updated' );
 			$this->sql_clauses['where']['date_query'] = preg_replace( '/^\s*AND\s*/', '', $this->date_query->get_sql() );
@@ -617,8 +659,15 @@ class Blinks_Bookmark_Query {
 			'link_owner',
 			'link_update',
 			'link_notes',
+			'link_updated',
 			'link_description',
 		);
+
+		foreach( $allowed_keys as $key ) {
+			if ( 'link_' . $orderby === $key ) {
+				$orderby = $key;
+			}
+		}
 
 		if ( ! empty( $this->query_vars['meta_key'] ) ) {
 			$allowed_keys[] = $this->query_vars['meta_key'];
@@ -667,4 +716,201 @@ class Blinks_Bookmark_Query {
 			return 'DESC';
 		}
 	}
+
+	/**
+	 * Parses various taxonomy related query vars.
+	 *
+	 *
+	 * @param array $q The query variables. Passed by reference.
+	 */
+	public function parse_tax_query( &$q ) {
+		if ( ! empty( $q['tax_query'] ) && is_array( $q['tax_query'] ) ) {
+			$tax_query = $q['tax_query'];
+		} else {
+			$tax_query = array();
+		}
+
+		if ( ! empty( $q['taxonomy'] ) && ! empty( $q['term'] ) ) {
+			$tax_query[] = array(
+				'taxonomy' => $q['taxonomy'],
+				'terms'    => array( $q['term'] ),
+				'field'    => 'slug',
+			);
+		}
+
+		foreach ( get_taxonomies( array(), 'objects' ) as $taxonomy => $t ) {
+			if ( $t->query_var && ! empty( $q[ $t->query_var ] ) ) {
+				$tax_query_defaults = array(
+					'taxonomy' => $taxonomy,
+					'field'    => 'slug',
+				);
+
+				if ( ! empty( $t->rewrite['hierarchical'] ) ) {
+					$q[ $t->query_var ] = wp_basename( $q[ $t->query_var ] );
+				}
+
+				$term = $q[ $t->query_var ];
+
+				if ( is_array( $term ) ) {
+					$term = implode( ',', $term );
+				}
+
+				if ( strpos( $term, '+' ) !== false ) {
+					$terms = preg_split( '/[+]+/', $term );
+					foreach ( $terms as $term ) {
+						$tax_query[] = array_merge(
+							$tax_query_defaults,
+							array(
+								'terms' => array( $term ),
+							)
+						);
+					}
+				} else {
+					$tax_query[] = array_merge(
+						$tax_query_defaults,
+						array(
+							'terms' => preg_split( '/[,]+/', $term ),
+						)
+					);
+				}
+			}
+		}
+
+		// If query string 'category' is an array, implode it.
+		if ( is_array( $q['category'] ) ) {
+			$q['category'] = implode( ',', $q['category'] );
+		}
+
+		// Category stuff.
+
+		if ( ! empty( $q['category'] ) ) {
+			$cat_in     = array();
+			$cat_not_in = array();
+
+			$cat_array = preg_split( '/[,\s]+/', urldecode( $q['category'] ) );
+			$cat_array = array_map( 'intval', $cat_array );
+			$q['category']  = implode( ',', $cat_array );
+
+			foreach ( $cat_array as $cat ) {
+				if ( $cat > 0 ) {
+					$cat_in[] = $cat;
+				} elseif ( $cat < 0 ) {
+					$cat_not_in[] = abs( $cat );
+				}
+			}
+
+			if ( ! empty( $cat_in ) ) {
+				$tax_query[] = array(
+					'taxonomy'         => 'link_category',
+					'terms'            => $cat_in,
+					'field'            => 'term_id',
+					'include_children' => true,
+				);
+			}
+
+			if ( ! empty( $cat_not_in ) ) {
+				$tax_query[] = array(
+					'taxonomy'         => 'link_category',
+					'terms'            => $cat_not_in,
+					'field'            => 'term_id',
+					'operator'         => 'NOT IN',
+					'include_children' => true,
+				);
+			}
+			unset( $cat_array, $cat_in, $cat_not_in );
+		}
+
+		if ( ! empty( $q['category__and'] ) && 1 === count( (array) $q['category__and'] ) ) {
+			$q['category__and'] = (array) $q['category__and'];
+			if ( ! isset( $q['category__in'] ) ) {
+				$q['category__in'] = array();
+			}
+			$q['category__in'][] = absint( reset( $q['category__and'] ) );
+			unset( $q['category__and'] );
+		}
+
+		if ( ! empty( $q['category__in'] ) ) {
+			$q['category__in'] = array_map( 'absint', array_unique( (array) $q['category__in'] ) );
+			$tax_query[]       = array(
+				'taxonomy'         => 'category',
+				'terms'            => $q['category__in'],
+				'field'            => 'term_id',
+				'include_children' => false,
+			);
+		}
+
+		if ( ! empty( $q['category__not_in'] ) ) {
+			$q['category__not_in'] = array_map( 'absint', array_unique( (array) $q['category__not_in'] ) );
+			$tax_query[]           = array(
+				'taxonomy'         => 'category',
+				'terms'            => $q['category__not_in'],
+				'operator'         => 'NOT IN',
+				'include_children' => false,
+			);
+		}
+
+		if ( ! empty( $q['category__and'] ) ) {
+			$q['category__and'] = array_map( 'absint', array_unique( (array) $q['category__and'] ) );
+			$tax_query[]        = array(
+				'taxonomy'         => 'category',
+				'terms'            => $q['category__and'],
+				'field'            => 'term_id',
+				'operator'         => 'AND',
+				'include_children' => false,
+			);
+		}
+		// If query string 'tag' is array, implode it.
+		if ( is_array( $q['tag'] ) ) {
+			$q['tag'] = implode( ',', $q['tag'] );
+		}
+
+		if ( ! empty( $q['tag__in'] ) ) {
+			$q['tag__in'] = array_map( 'absint', array_unique( (array) $q['tag__in'] ) );
+			$tax_query[]  = array(
+				'taxonomy' => 'link_tag',
+				'terms'    => $q['tag__in'],
+			);
+		}
+
+		if ( ! empty( $q['tag__not_in'] ) ) {
+			$q['tag__not_in'] = array_map( 'absint', array_unique( (array) $q['tag__not_in'] ) );
+			$tax_query[]      = array(
+				'taxonomy' => 'link_tag',
+				'terms'    => $q['tag__not_in'],
+				'operator' => 'NOT IN',
+			);
+		}
+		if ( ! empty( $q['tag__and'] ) ) {
+			$q['tag__and'] = array_map( 'absint', array_unique( (array) $q['tag__and'] ) );
+			$tax_query[]   = array(
+				'taxonomy' => 'link_tag',
+				'terms'    => $q['tag__and'],
+				'operator' => 'AND',
+			);
+		}
+
+		if ( ! empty( $q['tag_slug__in'] ) ) {
+			$q['tag_slug__in'] = array_map( 'sanitize_title_for_query', array_unique( (array) $q['tag_slug__in'] ) );
+			$tax_query[]       = array(
+				'taxonomy' => 'link_tag',
+				'terms'    => $q['tag_slug__in'],
+				'field'    => 'slug',
+			);
+		}
+
+		if ( ! empty( $q['tag_slug__and'] ) ) {
+			$q['tag_slug__and'] = array_map( 'sanitize_title_for_query', array_unique( (array) $q['tag_slug__and'] ) );
+			$tax_query[]        = array(
+				'taxonomy' => 'link_tag',
+				'terms'    => $q['tag_slug__and'],
+				'field'    => 'slug',
+				'operator' => 'AND',
+			);
+		}
+
+		return new WP_Tax_Query( $tax_query );
+	}
+
+
+
 }
