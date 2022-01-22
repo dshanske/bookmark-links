@@ -5,6 +5,7 @@ class WPBookmarkTest extends WP_UnitTestCase {
 		blinks_create_tables();
 		parent::set_up();
 	}
+
 	public function test_set_and_get_wp_bookmark() {
 		$link_id = wp_insert_link(
 				array(
@@ -15,7 +16,7 @@ class WPBookmarkTest extends WP_UnitTestCase {
 			);
 		add_link_meta( $link_id, 'test', 'testdata' );
 		$bookmark = get_bookmark( $link_id );
-		$bookmark_object = get_bookmark_object( $link_id );
+		$bookmark_object = blinks_get_bookmark( $link_id );
 
 		$this->assertEquals( $bookmark_object, new WP_Bookmark( $bookmark ) );
 

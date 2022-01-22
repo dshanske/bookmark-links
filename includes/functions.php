@@ -79,24 +79,6 @@ if ( ! function_exists( 'update_link_meta' ) ) {
 	}
 }
 
-/**
- * Retrieve Bookmark data
- *
- * @global wpdb $wpdb WordPress database abstraction object.
- *
- * @param int|WP_Bookmark $bookmark
- * @param string          $output   Optional. The required return type. One of OBJECT, ARRAY_A, or ARRAY_N, which
- *                                  correspond to an stdClass object, an associative array, or a numeric array,
- *                                  respectively. Default OBJECT.
- * @param string          $filter   Optional. How to sanitize bookmark fields. Default 'raw'.
- * @return array|object|null Type returned depends on $output value.
- */
-function get_bookmark_object( $bookmark, $output = OBJECT, $filter = 'raw' ) {
-	$bookmark = get_bookmark( $bookmark, $output, $filter );
-	if ( OBJECT === $output ) {
-		return new WP_Bookmark( $bookmark );
-	}
-}
 
 function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
 	$link_id = (int) $link_id;
@@ -124,46 +106,4 @@ function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
 	$terms_to_edit = esc_attr( implode( ',', $term_names ) );
 
 	return $terms_to_edit;
-}
-
-if ( ! function_exists( 'get_link_timestamp' ) ) {
-	/**
-	 * Retrieve link updated time as a Unix timestamp.
-	 *
-	 * Note that this function returns a true Unix timestamp, not summed with timezone offset
-	 * like older WP functions.
-	 *
-	 * @param int|WP_Bookmark $link  WP_Bookmark object or ID.
-	 * @return int|false Unix timestamp on success, false on failure.
-	 */
-	function get_link_timestamp( $link ) {
-		$datetime = get_link_datetime( $post );
-		if ( false === $datetime ) {
-			return false;
-		}
-		return $datetime->getTimestamp();
-	}
-}
-
-
-if ( ! function_exists( 'get_link_datetime' ) ) {
-	/**
-	 * Retrieve link updated time as a `DateTimeImmutable` object instance.
-	 *
-	 * The object will be set to the timezone from WordPress settings.
-	 *
-	 * @param int|WP_Bookmark $link  WP_Bookmark object or ID.
-	 * @return DateTimeImmutable|false Time object on success, false on failure.
-	 */
-	function get_link_datetime( $link ) {
-		$link = new WP_Bookmark( $link );
-		if ( ! $link ) {
-			return false;
-		}
-		$time = $link->link_updated;
-		if ( empty( $time ) || '0000-00-00 00:00:00' === $time ) {
-			return false;
-		}
-		return date_create_immutable_from_format( 'Y-m-d H:i:s', $time, wp_timezone() );
-	}
 }

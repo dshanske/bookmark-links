@@ -126,6 +126,7 @@ function blinks_register() {
 			'rewrite'              => false,
 			'public'               => false,
 			'show_ui'              => true,
+			'show_admin_column'    => true,
 			'meta_box_sanitize_cb' => 'taxonomy_meta_box_sanitize_cb_input',
 		)
 	);
@@ -170,13 +171,23 @@ function blinks_register() {
 function blinks_load() {
 	blinks_loader(
 		array(
+			'compat-functions.php',
+			'bookmark-functions.php',
+			'functions.php',
 			'class-wp-bookmark.php',
 			'bookmark-links-metabox.php',
-			'functions.php',
 		)
 	);
 	blinks_register();
 }
 
 add_action( 'plugins_loaded', 'blinks_load' );
+
+
+function blinks_link_manager() {
+	require_once __DIR__ . '/includes/link-manager.php';
+	exit();
+}
+
+add_action( 'load-link-manager.php', 'blinks_link_manager' );
 

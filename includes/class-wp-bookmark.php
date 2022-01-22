@@ -119,12 +119,21 @@ final class WP_Bookmark {
 	 */
 	public $link_category = array();
 
+	 /**
+	  * Stores the post object's sanitization level.
+	  *
+	  * Does not correspond to a DB field.
+	  *
+	  * @var string
+	  */
+	  public $filter;
+
 	/**
 	 * Retrieve WP_Bookmark instance.
 	 *
 	 * @global wpdb $wpdb WordPress database abstraction object.
 	 *
-	 * @param int $link_id Post ID.
+	 * @param int $link_id Link ID.
 	 * @return WP_Link|false Link object, false otherwise.
 	 */
 	public static function get_instance( $link_id ) {
@@ -145,10 +154,11 @@ final class WP_Bookmark {
 
 			$_bookmark->link_category = array_unique( wp_get_object_terms( $_bookmark->link_id, 'link_category', array( 'fields' => 'ids' ) ) );
 
+			$_bookmark = sanitize_bookmark( $_bookmark, 'raw' );
 			wp_cache_add( $_bookmark->link_id, $_bookmark, 'bookmark' );
+		} elseif ( empty( $_bookmark->filter ) ) {
+			$_bookmark = sanitize_bookmark( $_bookmark, 'raw' );
 		}
-
-		$_bookmark = sanitize_bookmark( $_bookmark, $filter );
 
 		return new WP_Bookmark( $_bookmark );
 	}
@@ -197,7 +207,29 @@ final class WP_Bookmark {
 
 		$value = get_link_meta( $this->link_id, $key, true );
 
+		if ( $this->filter ) {
+			$value = sanitize_bookmark_field( $key, $value, $this->link_id, $this->filter );
+		}
+
 		return $value;
+	}
+
+	/**
+	 * {@Missing Summary}
+	 *
+	 * @param string $filter Filter.
+	 * @return WP_Bookmark
+	 */
+	public function filter( $filter ) {
+		if ( $this->filter === $filter ) {
+			return $this;
+		}
+
+		if ( 'raw' === $filter ) {
+			return self::get_instance( $this->link_id );
+		}
+
+		return sanitize_bookmark( $bookmark, $filter );
 	}
 
 	/**
