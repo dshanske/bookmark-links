@@ -173,6 +173,7 @@ function blinks_load() {
 		array(
 			'compat-functions.php',
 			'bookmark-functions.php',
+			'class-blinks-bookmark-query.php',
 			'functions.php',
 			'class-wp-bookmark.php',
 			'bookmark-links-metabox.php',
@@ -190,4 +191,12 @@ function blinks_link_manager() {
 }
 
 add_action( 'load-link-manager.php', 'blinks_link_manager' );
+
+
+function blinks_link_php() {
+	require_once __DIR__ . '/includes/link.php';
+	exit();
+}
+
+add_action( 'load-link.php', 'blinks_link_php' );
 
