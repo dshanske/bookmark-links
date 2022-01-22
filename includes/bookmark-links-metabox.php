@@ -95,7 +95,6 @@ function save_link_data( $link_id ) {
 		$tax_object = get_taxonomy( 'link_tag' );
 		if ( isset( $tax_object->meta_box_sanitize_cb ) ) {
 			$_POST['tags_input'] = call_user_func_array( $tax_object->meta_box_sanitize_cb, array( 'link_tag', $_POST['tags_input'] ) );
-			error_log( wp_json_encode( wp_set_object_terms( $link_id, $_POST['tags_input'], 'link_tag' ) ) );
 		}
 	}
 
