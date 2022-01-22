@@ -176,10 +176,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'name'       => _x( 'Name', 'link name' ),
 			'url'        => __( 'URL' ),
 			'categories' => __( 'Categories' ),
-			'rel'        => __( 'Relationship' ),
-			'visible'    => __( 'Visible' ),
-			'rating'     => __( 'Rating' ),
-			'updated'    => __( 'Updated' ),
+			'tags'       => __( 'Tags' ),
 		);
 
 		$taxonomies = get_object_taxonomies( 'link', 'objects' );
@@ -194,12 +191,17 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 
 		foreach ( $taxonomies as $taxonomy ) {
 			if ( 'link_tag' === $taxonomy ) {
-				$column_key = 'tags';
+				continue;
 			} else {
 				$column_key = 'taxonomy-' . $taxonomy;
+				$link_columns[ $column_key ] = get_taxonomy( $taxonomy )->labels->name;
 			}
-			$link_columns[ $column_key ] = get_taxonomy( $taxonomy )->labels->name;
 		}
+
+		$link_columns['rel']        = __( 'Relationship', 'default');
+		$link_columns['visible']    = __( 'Visible', 'default' );
+		$link_columns['rating']     = __( 'Rating', 'default' );
+		$link_columns['updated']    = __( 'Updated', 'bookmark-links' );
 
 		/**
 		 * Filters the columns displayed in the Bookmarks list table.
@@ -371,7 +373,11 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @param object $link The current link object.
 	 */
 	public function column_rating( $link ) {
-		echo $link->link_rating;
+		if ( 0 === (int) $link->link_rating ) {
+			echo __( 'None', 'bookmark-links' );
+		} else {
+			echo (int) $link->link_rating;
+		}
 	}
 
 	/**
