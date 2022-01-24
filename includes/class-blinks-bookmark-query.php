@@ -147,6 +147,8 @@ class Blinks_Bookmark_Query {
 	 *                                                   Default ''. If hide_invisible is set, this parameter will be unset.
 	 *     @type int|bool     $hide_invisible            Whether to only show links marked as visible.
 	 *                                                   Accepts 1|true or 0|false. Default 1|true.
+	 *     @type int|bool     $toread                    Whether to only show links marked as read later.
+	 *                                                   Accepts 1|true, 0|false, or all. Default 'all'.
 	 *     @type string       $meta_key                  Include bookmarks with a matching bookmark meta key.
 	 *                                                   Default empty.
 	 *     @type string       $meta_value                Include bookmarks with a matching bookmark meta value.
@@ -193,6 +195,7 @@ class Blinks_Bookmark_Query {
 			'tag'                        => '',
 			'taxonomy'                   => '',
 			'term'                       => '',
+			'toread'                     => 'all',
 			'count'                      => false,
 			'date_query'                 => null, // See WP_Date_Query.
 			'fields'                     => '',
@@ -229,6 +232,18 @@ class Blinks_Bookmark_Query {
 		}
 
 		$this->query_vars = wp_parse_args( $query, $this->query_var_defaults );
+
+		if ( 'all' !== $this->query_vars['toread'] ) {
+			$meta_query = $this->query_vars['meta_query'];
+			if ( empty( $meta_query ) ) {
+				$meta_query = array();
+			}
+			$meta_query[] = array(
+				'key' => 'link_toread',
+				'compare' => ( $this->query_vars['toread'] ) ? 'EXISTS' : 'NOT EXISTS'
+			);
+			$this->query_vars['meta_query'] = $meta_query;
+		}
 
 		/**
 		 * Fires after the bookmark query vars have been parsed.

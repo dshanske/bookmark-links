@@ -49,36 +49,29 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @global string $order
 	 */
 	public function prepare_items() {
-		global $cat_id, $s, $orderby, $order, $term, $taxonomy;
-
-		wp_reset_vars( array( 'action', 'cat_id', 'link_id', 'orderby', 'order', 's', 'taxonomy', 'term' ) );
-
 		$args = array(
 			'hide_invisible' => 0,
 			'hide_empty'     => 0,
 		);
 
-		if ( 'all' !== $cat_id ) {
-			$args['category'] = $cat_id;
+		if ( ! empty( $_REQUEST['cat_id'] ) && 'all' !== $_REQUEST['cat_id'] ) {
+			$args['category'] = $_REQUEST['cat_id'];
 		}
 
-		if ( ! empty( $s ) ) {
-			$args['search'] = $s;
-		}
-		if ( ! empty( $orderby ) ) {
-			$args['orderby'] = $orderby;
-		}
-		if ( ! empty( $order ) ) {
-			$args['order'] = $order;
+		if ( ! empty( $_REQUEST['s'] ) ) {
+			$args['search'] = $_REQUEST['s'];
 		}
 
-		if ( ! empty( $taxonomy ) ) {
-			$args['taxonomy'] = $taxonomy;
+		$query_var = array( 'action', 'orderby', 'link_id', 'order', 'taxonomy', 'term', 'toread' );
+
+		foreach( $query_var as $var ) {
+			if ( array_key_exists( $var, $_REQUEST ) ) {
+				$args[ $var ] = $_REQUEST[ $var ];
+			}
 		}
 
-		if ( ! empty( $term ) ) {
-			$args['term'] = $term;
-		}
+		error_log( 'Args: ' . wp_json_encode( $args ) );
+
 
 		$this->items = blinks_get_bookmarks( $args );
 	}
@@ -162,6 +155,12 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			echo '<label class="screen-reader-text" for="cat_id">' . get_taxonomy( 'link_category' )->labels->filter_by_item . '</label>';
 
 			wp_dropdown_categories( $dropdown_options );
+
+			echo '<select name="toread">';
+			echo '<option value="all">' . __( 'All', 'bookmark-links' ) . '</option>';
+			echo '<option value="1">' . __( 'To Read', 'bookmark-links' ) . '</option>';
+			echo '<option value="0">' . __( 'Read', 'bookmark-links' ) . '</option>';
+			echo '</select>';
 
 			submit_button( __( 'Filter' ), '', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
 			?>
