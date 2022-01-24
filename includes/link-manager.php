@@ -29,10 +29,21 @@ if ( $doaction && isset( $_REQUEST['linkcheck'] ) ) {
 		foreach ( $bulklinks as $link_id ) {
 			$link_id = (int) $link_id;
 
-			wp_delete_link( $link_id );
+			blinks_delete_bookmark( $link_id );
 		}
-
 		$redirect_to = add_query_arg( 'deleted', count( $bulklinks ), $redirect_to );
+	} else if ( 'read' === $doaction ) {
+		foreach ( $bulklinks as $link_id ) {
+			$link_id = (int) $link_id;
+			delete_link_meta( $link_id, 'link_toread' );
+		}
+		$redirect_to = add_query_arg( 'readed', count( $bulklinks ), $redirect_to );
+	} else if ( 'toread' === $doaction ) {
+		foreach ( $bulklinks as $link_id ) {
+			$link_id = (int) $link_id;
+			update_link_meta( $link_id, 'link_toread', 1 );
+		}
+		$redirect_to = add_query_arg( 'toreaded', count( $bulklinks ), $redirect_to );
 	} else {
 		$screen = get_current_screen()->id;
 

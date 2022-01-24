@@ -200,6 +200,17 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 		}
 	}
 
+	if ( isset( $linkdata['link_toread'] ) ) {
+		if ( $linkdata['link_toread'] ) {
+			update_link_meta( $link_id, 'link_toread', 1 );
+		} else {
+			delete_link_meta( $link_id, 'link_toread' );
+		}
+	} else {
+		delete_link_meta( $link_id, 'link_toread' );
+	}
+		
+
 	if ( ! empty( $linkdata['meta_input'] ) ) {
 		foreach ( $linkdata['meta_input'] as $field => $value ) {
 			update_link_meta( $link_id, $field, $value );
@@ -248,6 +259,49 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	do_action( 'insert_bookmark', $link_id, $bookmark, $update );
 
 	return $link_id;
+}
+
+/**
+ * Deletes a specified link from the database.
+ *
+ *
+ * @global wpdb $wpdb WordPress database abstraction object.
+ *
+ * @param int $link_id ID of the link to delete
+ * @return true Always true.
+ */
+function blinks_delete_bookmark( $link_id ) {
+	global $wpdb;
+	/**
+	 * Fires before a link is deleted.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $link_id ID of the link to delete.
+	 */
+	do_action( 'delete_link', $link_id );
+
+	wp_delete_object_term_relationships( $link_id, get_object_taxonomies( 'link' ) );
+
+	$link_meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT meta_id FROM $wpdb->linkmeta WHERE link_id = %d ", $link_id ) );
+	foreach ( $link_meta_ids as $mid ) {
+		delete_metadata_by_mid( 'link', $mid );
+	}
+			 
+	$wpdb->delete( $wpdb->links, array( 'link_id' => $link_id ) );
+
+	/**
+	 * Fires after a link has been deleted.
+	 *
+	 * @since 2.2.0
+	 *
+	 * @param int $link_id ID of the deleted link.
+	 */
+	do_action( 'deleted_link', $link_id );
+
+	clean_bookmark_cache( $link_id );
+
+	return true;
 }
 
 /**
@@ -418,3 +472,40 @@ if ( ! function_exists( 'prime_bookmark_caches' ) ) {
 	}
 }
 
+/**
+ * Displays a bookmark action link.
+ *
+ *
+ * @param int|WP_Bookmark $link Optional. Bookmark ID. Default is the ID of the current bookmark.
+ * @param 
+ * @return string|void The edit bookmark link URL.
+ */
+function get_bookmark_action_link( $link = 0, $action = 'edit' ) {
+	$link = blinks_get_bookmark( $link );
+
+	if ( ! current_user_can( 'manage_links' ) ) {
+		return;
+	}
+
+	
+	$location = add_query_arg(
+		array(
+			'action' => $action,
+			'link_id' => $link->link_id
+		),
+		admin_url( 'link.php' )
+	);
+
+	/**
+	 * Filters the bookmark edit link.
+	 *
+	 * @since 2.7.0
+	 *
+	 * @param string $location The edit link.
+	 * @param int    $link_id  Bookmark ID.
+	 * @param string $action The Action.
+	 */
+	$location = apply_filters( 'get_bookmark_action_link', $location, $link->link_id, $action );
+	$action = $action . '-bookmark_' . $link->link_id;
+	return wp_nonce_url( $location, $action );
+}

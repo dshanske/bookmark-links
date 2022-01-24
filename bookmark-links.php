@@ -166,6 +166,13 @@ function blinks_register() {
 	);
 	register_meta( 'link', 'link_publication', $args );
 
+	$args = array(
+		'type'        => 'string',
+		'description' => __( 'Link To Read', 'bookmark-links' ),
+		'single'      => true,
+	);
+	register_meta( 'link', 'link_toread', $args );
+
 }
 
 function blinks_load() {

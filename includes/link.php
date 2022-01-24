@@ -58,14 +58,13 @@ switch ( $action ) {
 		foreach ( $linkcheck as $link_id ) {
 			$link_id = (int) $link_id;
 
-			if ( wp_delete_link( $link_id ) ) {
+			if ( blinks_delete_bookmark( $link_id ) ) {
 				$deleted++;
 			}
 		}
 
 		wp_redirect( "$this_file?deleted=$deleted" );
 		exit;
-
 	case 'move':
 		check_admin_referer( 'bulk-bookmarks' );
 
@@ -94,6 +93,25 @@ switch ( $action ) {
 		wp_redirect( $redir );
 		exit;
 
+	case 'read':
+		$link_id = (int) $_GET['link_id'];
+		check_admin_referer( 'read-bookmark_' . $link_id );
+
+		delete_link_meta( $link_id, 'link_toread' );
+
+		wp_redirect( $this_file );
+		exit;
+
+	case 'toread':
+		$link_id = (int) $_GET['link_id'];
+		check_admin_referer( 'toread-bookmark_' . $link_id );
+
+		update_link_meta( $link_id, 'link_toread', true );
+
+		wp_redirect( $this_file );
+		exit;
+
+
 	case 'save':
 		$link_id = (int) $_POST['link_id'];
 		check_admin_referer( 'update-bookmark_' . $link_id );
@@ -107,7 +125,7 @@ switch ( $action ) {
 		$link_id = (int) $_GET['link_id'];
 		check_admin_referer( 'delete-bookmark_' . $link_id );
 
-		wp_delete_link( $link_id );
+		blinks_delete_bookmark( $link_id );
 
 		wp_redirect( $this_file );
 		exit;

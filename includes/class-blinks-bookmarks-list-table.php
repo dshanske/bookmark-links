@@ -95,6 +95,8 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	protected function get_bulk_actions() {
 		$actions           = array();
 		$actions['delete'] = __( 'Delete' );
+		$actions['read']   = __( 'Mark Read', 'bookmark-links' );
+		$actions['toread']   = __( 'Read Later', 'bookmark-links' );
 
 		return $actions;
 	}
@@ -201,6 +203,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$link_columns['rel']        = __( 'Relationship', 'default');
 		$link_columns['visible']    = __( 'Visible', 'default' );
 		$link_columns['rating']     = __( 'Rating', 'default' );
+		$link_columns['toread']     = __( 'Read Later', 'bookmark-links' );
 		$link_columns['updated']    = __( 'Updated', 'bookmark-links' );
 
 		/**
@@ -223,7 +226,8 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'url'     => 'url',
 			'visible' => 'visible',
 			'rating'  => 'rating',
-			'updated' => 'updated'
+			'toread'  => 'toread',
+			'updated' => 'updated',
 		);
 	}
 
@@ -326,7 +330,20 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @param object $link The current link object.
 	 */
 	public function column_rel( $link ) {
-		echo empty( $link->link_rel ) ? '<br />' : $link->link_rel;
+		$rel = explode( ' ', $link->link_rel );
+		echo empty( $rel ) ? '<br />' : implode( '<br />', $rel );
+	}
+
+	/**
+	 * Notes whether this is marked as to read.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_toread( $link ) {
+		$toread = get_link_meta( $link->link_id, 'link_toread', true );
+		echo $toread ? __( 'Yes', 'bookmark-link' ) : __( 'No', 'bookmark-link' );
 	}
 
 	/**
@@ -472,7 +489,9 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 
 		// Restores the more descriptive, specific name for use within this method.
 		$link      = $item;
-		$edit_link = get_edit_bookmark_link( $link );
+		$edit_link = get_bookmark_action_link( $link );
+		$read_link = get_bookmark_action_link( $link, 'read' );
+		$toread_link = get_bookmark_action_link( $link, 'toread' );
 
 		$actions           = array();
 		$actions['edit']   = '<a href="' . $edit_link . '">' . __( 'Edit' ) . '</a>';
@@ -483,6 +502,11 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			esc_js( sprintf( __( "You are about to delete this link '%s'\n  'Cancel' to stop, 'OK' to delete." ), $link->link_name ) ),
 			__( 'Delete' )
 		);
+		if ( get_link_meta( $link->link_id, 'link_toread', true ) ) {
+			$actions['read']   = '<a href="' . $read_link . '">' . __( 'Mark Read' ) . '</a>';
+		} else {
+			$actions['toread']   = '<a href="' . $toread_link . '">' . __( 'Read Later' ) . '</a>';
+		}
 
 		return $this->row_actions( $actions );
 	}
