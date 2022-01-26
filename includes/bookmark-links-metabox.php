@@ -27,8 +27,38 @@ function link_tags_meta_box( $link ) {
 	<?php
 }
 
+function link_meta_meta_box( $link ) {
+	echo '<div id="link_meta_box">';
+	$linkmeta = get_link_meta( $link->link_id );
+	?>
+	<table>
+		<thead>
+			<tr>
+				<th class="key-column"><?php esc_html_e( 'Key', 'bookmark-links' ); ?></th>
+				<th class="value-column"><?php esc_html_e( 'Value', 'bookmark-links' ); ?></th>
+			</tr>
+		</thead>
+		<tbody>
+
+	<?php
+	foreach ( $linkmeta as $key => $value ) {
+		$value = wp_json_encode( $value, JSON_PRETTY_PRINT );
+		?>
+		<tr>
+			<td class="key-column"><?php echo esc_html( $key ); ?></td>
+			<td class="value-column"><?php echo esc_html( $value ); ?></td>
+		</tr>
+		<?php
+	}
+	echo '</tbody></table>';
+	echo '</div>';
+}
+
 function add_blinks_meta_boxes() {
 	add_meta_box( 'linktagdiv', __( 'Tags', 'bookmark-links' ), 'link_tags_meta_box', null, 'normal', 'core' );
+	if ( WP_DEBUG ) {
+		add_meta_box( 'linkmeta', __( 'Meta Data', 'bookmark-links' ), 'link_meta_meta_box', null, 'normal', 'core' );
+	}
 	remove_meta_box( 'linksubmitdiv', get_current_screen(), 'side' );
 	add_meta_box( 'blinksubmitdiv', __( 'Save' ), 'blinks_submit_meta_box', null, 'side', 'core' );
 }
@@ -105,7 +135,7 @@ add_filter( 'manage_link_tag_custom_column', 'blinks_link_tag_column', 10, 3 );
  * @param object $link
  */
 function blinks_submit_meta_box( $linkarr ) {
-$link = new WP_Bookmark( $linkarr );
+	$link = new WP_Bookmark( $linkarr );
 	?>
 <div class="submitbox" id="submitlink">
 
@@ -142,7 +172,6 @@ $link = new WP_Bookmark( $linkarr );
 	<?php
 	/**
 	 * Fires before the link updated setting in the Publish meta box.
-	 *
 	 *
 	 * @param WP_Bookmark $link object for the current link.
 	 */
