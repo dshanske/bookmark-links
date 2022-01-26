@@ -49,7 +49,8 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @global string $order
 	 */
 	public function prepare_items() {
-		$args = array(
+		$per_page = $this->get_per_page();
+		$args     = array(
 			'hide_invisible' => 0,
 			'hide_empty'     => 0,
 		);
@@ -62,18 +63,59 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$args['search'] = $_REQUEST['s'];
 		}
 
-		$query_var = array( 'action', 'orderby', 'link_id', 'order', 'taxonomy', 'term', 'toread' );
+	        $doing_ajax = wp_doing_ajax();
 
-		foreach( $query_var as $var ) {
+		if ( isset( $_REQUEST['number'] ) ) {
+			$args['number'] = (int) $_REQUEST['number'];
+		} else {
+			$args['number'] = $per_page + min( 8, $per_page ); // Grab a few extra.
+		}
+
+		$page = $this->get_pagenum();
+
+		if ( isset( $_REQUEST['start'] ) ) {
+			$start = $_REQUEST['start'];
+		} else {
+			$start = ( $page - 1 ) * $per_page;
+		}
+
+		if ( $doing_ajax && isset( $_REQUEST['offset'] ) ) {
+					$start += $_REQUEST['offset'];
+		}
+
+		$args['offset'] = $start;
+
+		$query_var = array( 'action', 'orderby', 'link_id', 'order', 'taxonomy', 'term', 'toread', 'paged' );
+
+		foreach ( $query_var as $var ) {
 			if ( array_key_exists( $var, $_REQUEST ) ) {
 				$args[ $var ] = $_REQUEST[ $var ];
 			}
 		}
 
-		error_log( 'Args: ' . wp_json_encode( $args ) );
-
+		$total_bookmarks = blinks_get_bookmarks(
+			array_merge(
+				$args,
+				array(
+					'count'  => true,
+					'offset' => 0,
+					'number' => 0,
+				)
+			)
+		);
 
 		$this->items = blinks_get_bookmarks( $args );
+
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_bookmarks,
+				'per_page'    => $per_page,
+			)
+		);
+	}
+
+	protected function get_per_page( $default = 20 ) {
+		return $default;
 	}
 
 	/**
@@ -89,7 +131,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$actions           = array();
 		$actions['delete'] = __( 'Delete' );
 		$actions['read']   = __( 'Mark Read', 'bookmark-links' );
-		$actions['toread']   = __( 'Read Later', 'bookmark-links' );
+		$actions['toread'] = __( 'Read Later', 'bookmark-links' );
 
 		return $actions;
 	}
@@ -194,16 +236,16 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			if ( 'link_tag' === $taxonomy ) {
 				continue;
 			} else {
-				$column_key = 'taxonomy-' . $taxonomy;
+				$column_key                  = 'taxonomy-' . $taxonomy;
 				$link_columns[ $column_key ] = get_taxonomy( $taxonomy )->labels->name;
 			}
 		}
 
-		$link_columns['rel']        = __( 'Relationship', 'default');
-		$link_columns['visible']    = __( 'Visible', 'default' );
-		$link_columns['rating']     = __( 'Rating', 'default' );
-		$link_columns['toread']     = __( 'Read Later', 'bookmark-links' );
-		$link_columns['updated']    = __( 'Updated', 'bookmark-links' );
+		$link_columns['rel']     = __( 'Relationship', 'default' );
+		$link_columns['visible'] = __( 'Visible', 'default' );
+		$link_columns['rating']  = __( 'Rating', 'default' );
+		$link_columns['toread']  = __( 'Read Later', 'bookmark-links' );
+		$link_columns['updated'] = __( 'Updated', 'bookmark-links' );
 
 		/**
 		 * Filters the columns displayed in the Bookmarks list table.
@@ -487,9 +529,9 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		}
 
 		// Restores the more descriptive, specific name for use within this method.
-		$link      = $item;
-		$edit_link = get_bookmark_action_link( $link );
-		$read_link = get_bookmark_action_link( $link, 'read' );
+		$link        = $item;
+		$edit_link   = get_bookmark_action_link( $link );
+		$read_link   = get_bookmark_action_link( $link, 'read' );
 		$toread_link = get_bookmark_action_link( $link, 'toread' );
 
 		$actions           = array();
@@ -502,9 +544,9 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			__( 'Delete' )
 		);
 		if ( get_link_meta( $link->link_id, 'link_toread', true ) ) {
-			$actions['read']   = '<a href="' . $read_link . '">' . __( 'Mark Read' ) . '</a>';
+			$actions['read'] = '<a href="' . $read_link . '">' . __( 'Mark Read' ) . '</a>';
 		} else {
-			$actions['toread']   = '<a href="' . $toread_link . '">' . __( 'Read Later' ) . '</a>';
+			$actions['toread'] = '<a href="' . $toread_link . '">' . __( 'Read Later' ) . '</a>';
 		}
 
 		return $this->row_actions( $actions );
