@@ -114,8 +114,9 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		);
 	}
 
-	protected function get_per_page( $default = 25 ) {
-		return $default;
+	protected function get_per_page() {
+		$links_per_page = $this->get_items_per_page( 'links_per_page' );
+		return $links_per_page;
 	}
 
 	/**

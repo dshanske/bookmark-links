@@ -193,12 +193,29 @@ add_action( 'plugins_loaded', 'blinks_load' );
 
 
 function blinks_link_manager() {
+	add_screen_option( 
+		'per_page', 
+		array(
+			'label' => __( 'Number of links per screen', 'bookmark-links' ),
+			'default' => '25',
+			'max'    => '300',
+			'option' => 'links_per_page'
+		)
+	);
 	require_once __DIR__ . '/includes/link-manager.php';
 	exit();
 }
 
 add_action( 'load-link-manager.php', 'blinks_link_manager' );
 
+
+function blinks_set_screen_option( $status, $option, $value ) {
+	if ( 'links_per_page' === $option ) {
+		return $value;
+	}
+}
+
+add_filter( 'set-screen-option', 'blinks_set_screen_option', 10, 3 );
 
 function blinks_link_php() {
 	require_once __DIR__ . '/includes/link.php';
