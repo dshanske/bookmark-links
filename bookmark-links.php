@@ -71,7 +71,6 @@ add_action( 'init', 'blinks_metadata_api', 0 );
 // hook in to switch blog to support multisite
 add_action( 'switch_blog', 'blinks_metadata_api', 0 );
 
-
 /**
  * Load files.
  *
@@ -184,6 +183,7 @@ function blinks_load() {
 			'functions.php',
 			'class-wp-bookmark.php',
 			'bookmark-links-metabox.php',
+			'class-pinboard-json-importer.php'
 		)
 	);
 	blinks_register();
