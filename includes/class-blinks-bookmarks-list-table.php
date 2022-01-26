@@ -114,7 +114,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		);
 	}
 
-	protected function get_per_page( $default = 20 ) {
+	protected function get_per_page( $default = 25 ) {
 		return $default;
 	}
 
@@ -551,6 +551,18 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$actions['read'] = '<a href="' . $read_link . '">' . __( 'Mark Read' ) . '</a>';
 		} else {
 			$actions['toread'] = '<a href="' . $toread_link . '">' . __( 'Read Later' ) . '</a>';
+		}
+
+		if ( class_exists( 'Post_Kinds_Plugin' ) ) {
+			$post_link = add_query_arg(
+				array(
+					'kindurl' => $link->link_url,
+					'kind' => 'bookmark'
+				),
+				admin_url( 'post-new.php' )
+			);
+
+			$actions['post'] = '<a href="' . $post_link . '">' . __( 'Post' ) . '</a>';
 		}
 
 		return $this->row_actions( $actions );
