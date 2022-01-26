@@ -492,6 +492,10 @@ class Blinks_Bookmark_Query {
 			$this->sql_clauses['where']['bookmark__not_in'] = "$wpdb->links.link_id NOT IN ( " . implode( ',', wp_parse_id_list( $this->query_vars['bookmark__not_in'] ) ) . ' )';
 		}
 
+		if ( 1 === (int) $this->query_vars['hide_invisible'] ) {
+			$this->sql_clauses['where']['hide_invisible'] = $wpdb->prepare( 'link_visible = %s', 'Y' );
+		}
+
 		if ( '' !== $this->query_vars['name'] ) {
 			$this->sql_clauses['where']['name'] = $wpdb->prepare( 'link_name = %s', $this->query_vars['name'] );
 		}
