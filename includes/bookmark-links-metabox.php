@@ -30,6 +30,10 @@ function link_tags_meta_box( $link ) {
 function link_meta_meta_box( $link ) {
 	echo '<div id="link_meta_box">';
 	$linkmeta = get_link_meta( $link->link_id );
+	if ( empty( $linkmeta ) ) {
+		_e( 'No Link Metadata Found', 'bookmark-links' );
+		return;
+	}
 	?>
 	<table>
 		<thead>
