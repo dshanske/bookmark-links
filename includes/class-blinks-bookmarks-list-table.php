@@ -124,6 +124,10 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		_e( 'No links found.' );
 	}
 
+	protected function get_views() {
+	    return apply_filters( 'link_get_views', array() );
+	}
+
 	/**
 	 * @return array
 	 */
