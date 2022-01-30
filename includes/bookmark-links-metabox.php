@@ -246,3 +246,12 @@ function blinks_submit_meta_box( $linkarr ) {
 	<?php
 }
 
+function blinks_default_hidden_columns( $hidden, $screen ) {
+	if ( 'link-manager' === $screen->id ) {
+		$hidden = array( 'rel' );
+	}
+	return $hidden;
+}
+
+add_filter( 'default_hidden_columns', 'blinks_default_hidden_columns', 10, 2 );
+

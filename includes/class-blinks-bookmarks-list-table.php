@@ -63,7 +63,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$args['search'] = $_REQUEST['s'];
 		}
 
-	        $doing_ajax = wp_doing_ajax();
+			$doing_ajax = wp_doing_ajax();
 
 		if ( isset( $_REQUEST['number'] ) ) {
 			$args['number'] = (int) $_REQUEST['number'];
@@ -126,7 +126,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	}
 
 	protected function get_views() {
-	    return apply_filters( 'link_get_views', array() );
+		return apply_filters( 'link_get_views', array() );
 	}
 
 	/**
@@ -250,6 +250,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$link_columns['visible'] = __( 'Visible', 'default' );
 		$link_columns['rating']  = __( 'Rating', 'default' );
 		$link_columns['toread']  = __( 'Read Later', 'bookmark-links' );
+		$link_columns['feed']    = __( 'Feed', 'bookmark-links' );
 		$link_columns['updated'] = __( 'Updated', 'bookmark-links' );
 
 		/**
@@ -273,6 +274,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'visible' => 'visible',
 			'rating'  => 'rating',
 			'toread'  => 'toread',
+			'feed'    => 'feed',
 			'updated' => 'updated',
 		);
 	}
@@ -383,13 +385,21 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	/**
 	 * Notes whether this is marked as to read.
 	 *
-	 * @since 4.3.0
-	 *
 	 * @param object $link The current link object.
 	 */
 	public function column_toread( $link ) {
 		$toread = get_link_meta( $link->link_id, 'link_toread', true );
 		echo $toread ? __( 'Yes', 'bookmark-link' ) : __( 'No', 'bookmark-link' );
+	}
+
+	/**
+	 * Notes whether this is marked as to read.
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_feed( $link ) {
+		$single = $link->link_rss === '';
+		echo $single ? __( 'No', 'bookmark-link' ) : __( 'Yes', 'bookmark-link' );
 	}
 
 	/**
@@ -558,7 +568,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$post_link = add_query_arg(
 				array(
 					'kindurl' => $link->link_url,
-					'kind' => 'bookmark'
+					'kind'    => 'bookmark',
 				),
 				admin_url( 'post-new.php' )
 			);
