@@ -149,7 +149,7 @@ switch ( $action ) {
 			wp_die( __( 'Link not found.' ) );
 		}
 
-		require ABSPATH . 'wp-admin/edit-link-form.php';
+		require __DIR__ . '/edit-link-form.php';
 		require_once ABSPATH . 'wp-admin/admin-footer.php';
 		break;
 

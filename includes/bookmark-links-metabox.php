@@ -28,7 +28,11 @@ function link_tags_meta_box( $link ) {
 }
 
 function link_meta_meta_box( $link ) {
+	if ( ! isset( $link->link_id ) ) {
+		return;
+	}
 	echo '<div id="link_meta_box">';
+
 	$linkmeta = get_link_meta( $link->link_id );
 	if ( empty( $linkmeta ) ) {
 		_e( 'No Link Metadata Found', 'bookmark-links' );
@@ -58,16 +62,45 @@ function link_meta_meta_box( $link ) {
 	echo '</div>';
 }
 
-function add_blinks_meta_boxes() {
-	add_meta_box( 'linktagdiv', __( 'Tags', 'bookmark-links' ), 'link_tags_meta_box', null, 'normal', 'core' );
-	if ( WP_DEBUG ) {
-		add_meta_box( 'linkmeta', __( 'Meta Data', 'bookmark-links' ), 'link_meta_meta_box', null, 'normal', 'core' );
-	}
-	remove_meta_box( 'linksubmitdiv', get_current_screen(), 'side' );
-	add_meta_box( 'blinksubmitdiv', __( 'Save' ), 'blinks_submit_meta_box', null, 'side', 'core' );
+/**
+ * Display advanced link options form fields.
+ *
+ * @param object $link
+ */
+function blinks_advanced_meta_box( $link ) {
+	?>
+	<table class="links-table" cellpadding="0">
+		<tr>
+			<th scope="row"><label for="rss_uri"><?php _e( 'Feed Address', 'bookmark-links' ); ?></label></th>
+				<td><input name="link_rss" class="code" type="text" id="rss_uri" maxlength="255" value="<?php echo ( isset( $link->link_rss ) ? esc_attr( $link->link_rss ) : '' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="link_image"><?php _e( 'Featured Image Address' ); ?></label></th>
+			<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr( $link->link_image ) : '' ); ?>" /></td>
+		</tr>
+			<tr>
+				<th scope="row"><label for="link_notes"><?php _e( 'Summary' ); ?></label></th>
+				<td><textarea name="link_notes" id="link_notes" rows="10"><?php echo ( isset( $link->link_notes ) ? $link->link_notes : '' ); // textarea_escaped ?></textarea></td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="link_rating"><?php _e( 'Rating' ); ?></label></th>
+				<td><select name="link_rating" id="link_rating" size="1">
+			  <?php
+					for ( $parsed_args = 0; $parsed_args <= 10; $parsed_args++ ) {
+						echo '<option value="' . $parsed_args . '"';
+						if ( isset( $link->link_rating ) && $link->link_rating == $parsed_args ) {
+							echo ' selected="selected"';
+						}
+						echo( '>' . $parsed_args . '</option>' );
+					}
+				?>
+				
+				</select>&nbsp;<?php _e( '(Leave at 0 for no rating.)' ); ?>
+				</td>
+			</tr>
+	</table>
+	 <?php
 }
-
-add_action( 'add_meta_boxes', 'add_blinks_meta_boxes' );
 
 function link_tag_admin_page() {
 	global $submenu;
@@ -249,6 +282,10 @@ function blinks_submit_meta_box( $linkarr ) {
 function blinks_default_hidden_columns( $hidden, $screen ) {
 	if ( 'link-manager' === $screen->id ) {
 		$hidden = array( 'rel' );
+	}
+
+	if ( 'link' === $screen->id ) {
+		$hidden = array( 'linkxfndiv', 'linktargetdiv' );
 	}
 	return $hidden;
 }

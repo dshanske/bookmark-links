@@ -249,9 +249,9 @@ final class WP_Bookmark {
 	 * @return string Type.
 	 */
 	public function type( $bookmark ) {
-		if ( '' === $bookmark->link_rss ) {
+		if ( isset( $bookmark->link_rss ) && '' === $bookmark->link_rss ) {
 			return 'single';
-		} elseif ( $bookmark->link_url === $this->link_rss ) {
+		} elseif ( isset( $bookmark->link_rss ) && $bookmark->link_url === $this->link_rss ) {
 			return 'h-feed';
 		} else {
 			return 'feed';

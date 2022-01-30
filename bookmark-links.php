@@ -208,6 +208,12 @@ function blinks_link_manager() {
 
 add_action( 'load-link-manager.php', 'blinks_link_manager' );
 
+function blinks_link_add() {
+	require_once __DIR__ . '/includes/link-add.php';
+	exit();
+}
+
+add_action( 'load-link-add.php', 'blinks_link_add' );
 
 function blinks_set_screen_option( $status, $option, $value ) {
 	if ( 'links_per_page' === $option ) {
