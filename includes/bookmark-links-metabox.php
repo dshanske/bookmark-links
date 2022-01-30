@@ -79,7 +79,7 @@ function blinks_advanced_meta_box( $link ) {
 			<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr( $link->link_image ) : '' ); ?>" /></td>
 		</tr>
 			<tr>
-				<th scope="row"><label for="link_notes"><?php _e( 'Summary' ); ?></label></th>
+				<th scope="row"><label for="link_notes"><?php _e( 'Annotation' ); ?></label></th>
 				<td><textarea name="link_notes" id="link_notes" rows="10"><?php echo ( isset( $link->link_notes ) ? $link->link_notes : '' ); // textarea_escaped ?></textarea></td>
 			</tr>
 			<tr>
@@ -217,14 +217,18 @@ function blinks_submit_meta_box( $linkarr ) {
 	?>
 <div class="misc-pub-section curtime misc-pub-curtime">
 	<?php
-	$updated = sprintf(
-	/* translators: 1: Comment date, 2: Comment time. */
-		__( '%1$s at %2$s' ),
-		/* translators: Publish box date format, see https://www.php.net/manual/datetime.format.php */
-				date_i18n( _x( 'M j, Y', 'link box date format' ), strtotime( $link->link_updated ) ),
-		/* translators: Publish box time format, see https://www.php.net/manual/datetime.format.php */
-						date_i18n( _x( 'H:i', 'link box time format' ), strtotime( $link->link_updated ) )
-	);
+	if ( '0000-00-00 00:00:00' !== $link->link_updated ) {
+		$updated = sprintf(
+		/* translators: 1: Link date, 2: Link time. */
+			__( '%1$s at %2$s' ),
+			/* translators: Publish box date format, see https://www.php.net/manual/datetime.format.php */
+					date_i18n( _x( 'M j, Y', 'link box date format' ), strtotime( $link->link_updated ) ),
+			/* translators: Publish box time format, see https://www.php.net/manual/datetime.format.php */
+					date_i18n( _x( 'H:i', 'link box time format' ), strtotime( $link->link_updated ) )
+		);
+	} else {
+		$updated = __( 'Not Set', 'bookmark-links' );
+	}
 	?>
 						<span id="timestamp">
 						<?php
