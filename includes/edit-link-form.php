@@ -117,10 +117,10 @@ wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 <div id="post-body" class="metabox-holder columns-<?php echo ( 1 === get_current_screen()->get_columns() ) ? '1' : '2'; ?>">
 <div id="post-body-content">
 <div id="namediv" class="postbox">
-<h2 class="postbox-header"><label for="link_name"><?php _ex( 'Title', 'link name', 'bookmark-links' ); ?></label></h2>
+<h2 class="postbox-header"><label for="link_name"><?php _ex( 'Name', 'link name', 'bookmark-links' ); ?></label></h2>
 <div class="inside">
 	<input type="text" name="link_name" size="30" maxlength="255" value="<?php echo esc_attr( $link->link_name ); ?>" id="link_name" />
-	<p><?php _e( 'Example: Article Title or Site Title', 'bookmark-links' ); ?></p>
+	<p><?php _e( 'Name of Item Being Linked. Example: The page title of the bookmarked page.', 'bookmark-links' ); ?></p>
 </div>
 </div>
 
@@ -136,7 +136,7 @@ wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 <h2 class="postbox-header"><label for="link_description"><?php _e( 'Description', 'bookmark-links' ); ?></label></h2>
 <div class="inside">
 	<input type="text" name="link_description" size="30" maxlength="255" value="<?php echo isset( $link->link_description ) ? esc_attr( $link->link_description ) : ''; ?>" id="link_description" />
-	<p><?php _e( 'This will be shown when someone hovers over or optionally below the link.', 'bookmark-links' ); ?></p>
+	<p><?php _e( 'Short description. This will be shown when someone hovers over or optionally below the link.', 'bookmark-links' ); ?></p>
 </div>
 </div>
 </div><!-- /post-body-content -->
