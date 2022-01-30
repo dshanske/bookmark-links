@@ -108,9 +108,16 @@ final class WP_Bookmark {
 	/**
 	 * The link's rss feed.
 	 *
-	 * @var int
+	 * @var string
 	 */
 	public $link_rss = '';
+
+	/**
+	 * The link type derived from the RSS field.
+	 *
+	 * @var string
+	 */
+	public $link_type = '';
 
 	/**
 	 * The link's category.
@@ -153,6 +160,7 @@ final class WP_Bookmark {
 			}
 
 			$_bookmark->link_category = array_unique( wp_get_object_terms( $_bookmark->link_id, 'link_category', array( 'fields' => 'ids' ) ) );
+			$_bookmark->link_type     = $this->type( $_bookmark );
 
 			$_bookmark = sanitize_bookmark( $_bookmark, 'raw' );
 			wp_cache_add( $_bookmark->link_id, $_bookmark, 'bookmark' );
@@ -171,6 +179,9 @@ final class WP_Bookmark {
 	public function __construct( $bookmark ) {
 		foreach ( get_object_vars( $bookmark ) as $key => $value ) {
 			$this->$key = $value;
+		}
+		if ( empty( $this->link_type ) ) {
+			$this->link_type = $this->type( $bookmark );
 		}
 	}
 
@@ -231,6 +242,22 @@ final class WP_Bookmark {
 
 		return sanitize_bookmark( $bookmark, $filter );
 	}
+
+	/**
+	 * Bookmark Type Setter
+	 *
+	 * @return string Type.
+	 */
+	public function type( $bookmark ) {
+		if ( '' === $bookmark->link_rss ) {
+			return 'single';
+		} elseif ( $bookmark->link_url === $this->link_rss ) {
+			return 'h-feed';
+		} else {
+			return 'feed';
+		}
+	}
+
 
 	/**
 	 * Convert object to array.

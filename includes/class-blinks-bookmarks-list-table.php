@@ -250,7 +250,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$link_columns['visible'] = __( 'Visible', 'default' );
 		$link_columns['rating']  = __( 'Rating', 'default' );
 		$link_columns['toread']  = __( 'Read Later', 'bookmark-links' );
-		$link_columns['feed']    = __( 'Feed', 'bookmark-links' );
+		$link_columns['type']    = __( 'Type', 'bookmark-links' );
 		$link_columns['updated'] = __( 'Updated', 'bookmark-links' );
 
 		/**
@@ -274,7 +274,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'visible' => 'visible',
 			'rating'  => 'rating',
 			'toread'  => 'toread',
-			'feed'    => 'feed',
+			'type'    => 'type',
 			'updated' => 'updated',
 		);
 	}
@@ -393,13 +393,22 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Notes whether this is marked as to read.
+	 * Notes the type of bookmark this is.
 	 *
 	 * @param object $link The current link object.
 	 */
-	public function column_feed( $link ) {
-		$single = $link->link_rss === '';
-		echo $single ? __( 'No', 'bookmark-link' ) : __( 'Yes', 'bookmark-link' );
+	public function column_type( $link ) {
+		$bookmark = blinks_get_bookmark( $link );
+		switch ( $bookmark->link_type ) {
+			case 'feed':
+				_e( 'Feed', 'bookmark-links' );
+				break;
+			case 'h-feed':
+				_e( 'H-Feed', 'bookmark-links' );
+				break;
+			default:
+				_e( 'Single', 'bookmark-links' );
+		}
 	}
 
 	/**
