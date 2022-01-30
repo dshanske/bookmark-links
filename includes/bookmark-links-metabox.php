@@ -79,10 +79,6 @@ function blinks_advanced_meta_box( $link ) {
 			<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr( $link->link_image ) : '' ); ?>" /></td>
 		</tr>
 			<tr>
-				<th scope="row"><label for="link_notes"><?php _e( 'Annotation' ); ?></label></th>
-				<td><textarea name="link_notes" id="link_notes" rows="10"><?php echo ( isset( $link->link_notes ) ? $link->link_notes : '' ); // textarea_escaped ?></textarea></td>
-			</tr>
-			<tr>
 				<th scope="row"><label for="link_rating"><?php _e( 'Rating' ); ?></label></th>
 				<td><select name="link_rating" id="link_rating" size="1">
 			  <?php

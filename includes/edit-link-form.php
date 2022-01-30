@@ -139,6 +139,25 @@ wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 	<p><?php _e( 'Short description. This will be shown when someone hovers over or optionally below the link.', 'bookmark-links' ); ?></p>
 </div>
 </div>
+
+<div id="notesdiv" class="postbox">
+<h2 class="postbox-header"><label for="link_notes"><?php _e( 'Notes', 'bookmark-links' ); ?></label></h2>
+<div class="inside">
+	<?php wp_editor( 
+		isset( $link->link_notes ) ? $link->link_notes : '',
+		'link_notes', 
+		array(
+			'textarea_name' => 'link_notes',
+			'textarea_rows' => '5',
+			'media_buttons' => false,
+			'teeny' => true
+
+		) 
+	); ?>
+	<p><?php _e( 'Notes about the Bookmark', 'bookmark-links' ); ?></p>
+</div>
+</div>
+
 </div><!-- /post-body-content -->
 
 <div id="postbox-container-1" class="postbox-container">
