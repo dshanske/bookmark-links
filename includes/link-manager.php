@@ -32,13 +32,13 @@ if ( $doaction && isset( $_REQUEST['linkcheck'] ) ) {
 			blinks_delete_bookmark( $link_id );
 		}
 		$redirect_to = add_query_arg( 'deleted', count( $bulklinks ), $redirect_to );
-	} else if ( 'read' === $doaction ) {
+	} elseif ( 'read' === $doaction ) {
 		foreach ( $bulklinks as $link_id ) {
 			$link_id = (int) $link_id;
 			delete_link_meta( $link_id, 'link_toread' );
 		}
 		$redirect_to = add_query_arg( 'readed', count( $bulklinks ), $redirect_to );
-	} else if ( 'toread' === $doaction ) {
+	} elseif ( 'toread' === $doaction ) {
 		foreach ( $bulklinks as $link_id ) {
 			$link_id = (int) $link_id;
 			update_link_meta( $link_id, 'link_toread', 1 );

@@ -160,10 +160,17 @@ function blinks_register() {
 
 	$args = array(
 		'type'        => 'string',
-		'description' => __( 'Link Publication', 'bookmark-links' ),
+		'description' => __( 'Link Site', 'bookmark-links' ),
 		'single'      => true,
 	);
-	register_meta( 'link', 'link_publication', $args );
+	register_meta( 'link', 'link_site', $args );
+
+	$args = array(
+		'type'        => 'string',
+		'description' => __( 'Link Site URL', 'bookmark-links' ),
+		'single'      => true,
+	);
+	register_meta( 'link', 'link_site_url', $args );
 
 	$args = array(
 		'type'        => 'string',
@@ -183,7 +190,7 @@ function blinks_load() {
 			'functions.php',
 			'class-wp-bookmark.php',
 			'bookmark-links-metabox.php',
-			'class-pinboard-json-importer.php'
+			'class-pinboard-json-importer.php',
 		)
 	);
 	blinks_register();
@@ -193,13 +200,13 @@ add_action( 'plugins_loaded', 'blinks_load' );
 
 
 function blinks_link_manager() {
-	add_screen_option( 
-		'per_page', 
+	add_screen_option(
+		'per_page',
 		array(
-			'label' => __( 'Number of links per screen', 'bookmark-links' ),
+			'label'   => __( 'Number of links per screen', 'bookmark-links' ),
 			'default' => '25',
-			'max'    => '300',
-			'option' => 'links_per_page'
+			'max'     => '300',
+			'option'  => 'links_per_page',
 		)
 	);
 	require_once __DIR__ . '/includes/link-manager.php';

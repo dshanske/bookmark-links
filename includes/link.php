@@ -16,7 +16,7 @@ global $link_id;
 if ( ! empty( $_REQUEST['action'] ) ) {
 	$action = $_REQUEST['action'];
 	/**
- 	 * Fires when an 'action' request variable is sent.
+	 * Fires when an 'action' request variable is sent.
 	 *
 	 * The dynamic portion of the hook name, `$action`, refers to
 	 * the action derived from the `GET` or `POST` request.

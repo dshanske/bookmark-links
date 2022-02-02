@@ -31,6 +31,7 @@ require_once ABSPATH . 'wp-admin/includes/meta-boxes.php';
 add_meta_box( 'linksubmitdiv', __( 'Save', 'default' ), 'blinks_submit_meta_box', null, 'side', 'core' );
 add_meta_box( 'linkcategorydiv', __( 'Categories', 'default' ), 'link_categories_meta_box', null, 'side', 'core' );
 add_meta_box( 'linktagdiv', __( 'Tags', 'bookmark-links', 'default' ), 'link_tags_meta_box', null, 'side', 'core' );
+add_meta_box( 'linkratingsdiv', __( 'Ratings', 'bookmark-links', 'default' ), 'blinks_ratings_meta_box', null, 'side', 'core' );
 add_meta_box( 'linktargetdiv', __( 'Target', 'default' ), 'link_target_meta_box', null, 'normal', 'core' );
 add_meta_box( 'linkxfndiv', __( 'Link Relationship (XFN)', 'default' ), 'link_xfn_meta_box', null, 'normal', 'core' );
 add_meta_box( 'linkadvanceddiv', __( 'Advanced', 'default' ), 'blinks_advanced_meta_box', null, 'normal', 'core' );
@@ -143,17 +144,19 @@ wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
 <div id="notesdiv" class="postbox">
 <h2 class="postbox-header"><label for="link_notes"><?php _e( 'Notes', 'bookmark-links' ); ?></label></h2>
 <div class="inside">
-	<?php wp_editor( 
+	<?php
+	wp_editor(
 		isset( $link->link_notes ) ? $link->link_notes : '',
-		'link_notes', 
+		'link_notes',
 		array(
 			'textarea_name' => 'link_notes',
 			'textarea_rows' => '5',
 			'media_buttons' => false,
-			'teeny' => true
+			'teeny'         => true,
 
-		) 
-	); ?>
+		)
+	);
+	?>
 	<p><?php _e( 'Notes about the Bookmark', 'bookmark-links' ); ?></p>
 </div>
 </div>

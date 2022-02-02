@@ -209,7 +209,16 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	} else {
 		delete_link_meta( $link_id, 'link_toread' );
 	}
-		
+
+	foreach ( array( 'link_site', 'link_site_url', 'link_author', 'link_author', 'link_author_url', 'link_author_photo' ) as $property ) {
+		if ( isset( $linkdata[ $property ] ) ) {
+			if ( empty( $linkdata[ $property ] ) ) {
+				delete_link_meta( $link_id, $property );
+			} else {
+				update_link_meta( $link_id, $property, $linkdata[ $property ] );
+			}
+		}
+	}
 
 	if ( ! empty( $linkdata['meta_input'] ) ) {
 		foreach ( $linkdata['meta_input'] as $field => $value ) {
@@ -264,7 +273,6 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 /**
  * Deletes a specified link from the database.
  *
- *
  * @global wpdb $wpdb WordPress database abstraction object.
  *
  * @param int $link_id ID of the link to delete
@@ -287,7 +295,7 @@ function blinks_delete_bookmark( $link_id ) {
 	foreach ( $link_meta_ids as $mid ) {
 		delete_metadata_by_mid( 'link', $mid );
 	}
-			 
+
 	$wpdb->delete( $wpdb->links, array( 'link_id' => $link_id ) );
 
 	/**
@@ -345,7 +353,7 @@ function blinks_update_bookmark( $linkdata, $wp_error = false ) {
 	}
 
 	// Merge old and new fields with new fields overwriting old ones.
-	$linkdata                      = array_merge( $link, $linkdata );
+	$linkdata                  = array_merge( $link, $linkdata );
 	$linkdata['link_category'] = $link_cats;
 	return blinks_insert_bookmark( $linkdata );
 }
@@ -475,9 +483,8 @@ if ( ! function_exists( 'prime_bookmark_caches' ) ) {
 /**
  * Displays a bookmark action link.
  *
- *
  * @param int|WP_Bookmark $link Optional. Bookmark ID. Default is the ID of the current bookmark.
- * @param 
+ * @param
  * @return string|void The edit bookmark link URL.
  */
 function get_bookmark_action_link( $link = 0, $action = 'edit' ) {
@@ -487,11 +494,10 @@ function get_bookmark_action_link( $link = 0, $action = 'edit' ) {
 		return;
 	}
 
-	
 	$location = add_query_arg(
 		array(
-			'action' => $action,
-			'link_id' => $link->link_id
+			'action'  => $action,
+			'link_id' => $link->link_id,
 		),
 		admin_url( 'link.php' )
 	);
@@ -506,6 +512,6 @@ function get_bookmark_action_link( $link = 0, $action = 'edit' ) {
 	 * @param string $action The Action.
 	 */
 	$location = apply_filters( 'get_bookmark_action_link', $location, $link->link_id, $action );
-	$action = $action . '-bookmark_' . $link->link_id;
+	$action   = $action . '-bookmark_' . $link->link_id;
 	return wp_nonce_url( $location, $action );
 }

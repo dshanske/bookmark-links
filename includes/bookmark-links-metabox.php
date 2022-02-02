@@ -75,27 +75,68 @@ function blinks_advanced_meta_box( $link ) {
 				<td><input name="link_rss" class="code" type="text" id="rss_uri" maxlength="255" value="<?php echo ( isset( $link->link_rss ) ? esc_attr( $link->link_rss ) : '' ); ?>" /></td>
 		</tr>
 		<tr>
-			<th scope="row"><label for="link_image"><?php _e( 'Featured Image Address' ); ?></label></th>
+			<th scope="row"><label for="link_image"><?php _e( 'Featured Image Address', 'bookmark-links' ); ?></label></th>
 			<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr( $link->link_image ) : '' ); ?>" /></td>
 		</tr>
-			<tr>
-				<th scope="row"><label for="link_rating"><?php _e( 'Rating' ); ?></label></th>
-				<td><select name="link_rating" id="link_rating" size="1">
-			  <?php
-					for ( $parsed_args = 0; $parsed_args <= 10; $parsed_args++ ) {
-						echo '<option value="' . $parsed_args . '"';
-						if ( isset( $link->link_rating ) && $link->link_rating == $parsed_args ) {
-							echo ' selected="selected"';
-						}
-						echo( '>' . $parsed_args . '</option>' );
-					}
-				?>
-				
-				</select>&nbsp;<?php _e( '(Leave at 0 for no rating.)' ); ?>
-				</td>
-			</tr>
+		<tr>
+			<th scope="row"><label for="link_author"><?php _e( 'Author Name' ); ?></label></th>
+			<td><input type="text" name="link_author" class="code" id="link_author" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_author' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="link_author_url"><?php _e( 'Author URL' ); ?></label></th>
+			<td><input type="text" name="link_author_url" class="code" id="link_author_url" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_author_url' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="link_author_photo"><?php _e( 'Author Photo URL' ); ?></label></th>
+			<td><input type="text" name="link_author_photo" class="code" id="link_author_photo" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_author_photo' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="link_site"><?php _e( 'Site or Publication Name' ); ?></label></th>
+			<td><input type="text" name="link_site" class="code" id="link_site" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_site' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="link_site_url"><?php _e( 'Site or Publication URL' ); ?></label></th>
+			<td><input type="text" name="link_site_url" class="code" id="link_site_url" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_site_url' ); ?>" /></td>
+		</tr>
 	</table>
 	 <?php
+}
+
+
+/**
+ * Returns meta for form data
+ *
+ * @param object $link
+ * @param string $key
+ */
+function blinks_form_get_meta( $link, $key ) {
+	if ( ! isset( $link->link_id ) ) {
+		return '';
+	}
+	$meta = get_link_meta( $link->link_id, $key, true );
+	if ( $meta ) {
+		return esc_attr( $meta );
+	}
+	return '';
+
+}
+
+function blinks_ratings_meta_box( $link ) {
+	?>
+		<label for="link_rating"><span class="dashicons dashicons-star-filled"></span><?php _e( 'Rating' ); ?></label>
+				<select name="link_rating" id="link_rating" size="1">
+			  <?php
+				for ( $parsed_args = 0; $parsed_args <= 10; $parsed_args++ ) {
+					echo '<option value="' . $parsed_args . '"';
+					if ( isset( $link->link_rating ) && $link->link_rating == $parsed_args ) {
+						echo ' selected="selected"';
+					}
+					echo( '>' . $parsed_args . '</option>' );
+				}
+				?>
+				
+				</select>&nbsp;<p><?php _e( '(Leave at 0 for no rating.)' ); ?></p>
+	<?php
 }
 
 function link_tag_admin_page() {
