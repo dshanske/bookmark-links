@@ -52,6 +52,11 @@ function blinks_get_bookmark( $bookmark = null, $output = OBJECT, $filter = 'raw
 	return $_bookmark;
 }
 
+function blinks_get_default_link_visible() {
+	$option = get_option( 'link_visible' );
+	return $option ? 'Y' : 'N';
+}
+
 /**
  * Inserts a link into the database, or updates an existing link.
  *
@@ -125,7 +130,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	$link_owner       = ( ! empty( $parsed_args['link_owner'] ) ) ? $parsed_args['link_owner'] : get_current_user_id();
 	$link_updated     = ( ! empty( $parsed_args['link_updated'] ) ) ? $parsed_args['link_updated'] : current_time( 'mysql' );
 	$link_notes       = ( ! empty( $parsed_args['link_notes'] ) ) ? $parsed_args['link_notes'] : '';
-	$link_description = ( ! empty( $parsed_args['link_description'] ) ) ? $parsed_args['link_description'] : '';
+	$link_description = ( ! empty( $parsed_args['link_description'] ) ) ? $parsed_args['link_description'] : blinks_get_default_link_visible();
 	$link_rss         = ( ! empty( $parsed_args['link_rss'] ) ) ? $parsed_args['link_rss'] : '';
 	$link_rel         = ( ! empty( $parsed_args['link_rel'] ) ) ? $parsed_args['link_rel'] : '';
 	$link_category    = ( ! empty( $parsed_args['link_category'] ) ) ? $parsed_args['link_category'] : array();

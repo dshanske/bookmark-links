@@ -5,24 +5,39 @@
  * @package Bookmark_Links
  */
 
-function link_tags_meta_box( $link ) {
-	$taxonomy              = get_taxonomy( 'link_tag' );
+function link_tags_meta_box( $link, $box ) {
+	$defaults = array( 'taxonomy' => 'link_tag' );
+	if ( ! isset( $box['args'] ) || ! is_array( $box['args'] ) ) {
+		$args = array();
+	} else {
+		$args = $box['args'];
+	}
+	$parsed_args           = wp_parse_args( $args, $defaults );
+	$tax_name              = esc_attr( $parsed_args['taxonomy'] );
+	$taxonomy              = get_taxonomy( $tax_name );
 	$user_can_assign_terms = current_user_can( $taxonomy->cap->assign_terms );
 	$comma                 = _x( ',', 'tag delimiter' );
 
 	if ( isset( $link->link_id ) ) {
-		$terms_to_edit = get_link_terms_to_edit( $link->link_id, 'link_tag' );
+		$terms_to_edit = get_link_terms_to_edit( $link->link_id, $tax_name );
 	} else {
 		$terms_to_edit = '';
 	}
 
 	?>
 
-<div class="tagsdiv" id="taxonomy-link_tag">
-	<div class="tags">
-		<p><textarea name="tags_input" rows="3" class="widefat the-tags" id="tax-input-link_tag" <?php disabled( ! $user_can_assign_terms ); ?> aria-describedby="new-tag-link_tag-desc"><?php echo str_replace( ',', $comma . ' ', $terms_to_edit ); // textarea_escaped by esc_attr() ?></textarea></p>
-	</div>
-	<p class="howto" id="new-tag-link_tag-desc"><?php echo $taxonomy->labels->separate_items_with_commas; ?></p>
+	<div class="tagsdiv" id="<?php echo $tax_name; ?>">
+		<div class="jaxtag">
+			<div class="nojs-tags">
+			<label for="tax-input-<?php echo $tax_name; ?>"><?php echo $taxonomy->labels->add_or_remove_items; ?></label>
+			<p><textarea name="<?php echo "tax_input[$tax_name]"; ?>" rows="3" cols="20" class="the-tags" id="tax-input-<?php echo $tax_name; ?>" <?php disabled( ! $user_can_assign_terms ); ?> aria-describedby="new-tag-<?php echo $tax_name; ?>-desc"><?php echo str_replace( ',', $comma . ' ', $terms_to_edit ); // textarea_escaped by esc_attr() ?></textarea></p>
+			</div>
+		<?php if ( $user_can_assign_terms ) : ?>
+			<p class="howto" id="new-tag-<?php echo $tax_name; ?>-desc"><?php echo $taxonomy->labels->separate_items_with_commas; ?></p>
+				<?php elseif ( empty( $terms_to_edit ) ) : ?>
+					<p><?php echo $taxonomy->labels->no_terms; ?></p>
+			<?php endif; ?>
+		</div>
 	</div>
 	<?php
 }
@@ -209,6 +224,14 @@ add_filter( 'manage_link_tag_custom_column', 'blinks_link_tag_column', 10, 3 );
  * @param object $link
  */
 function blinks_submit_meta_box( $linkarr ) {
+
+	// If this is an add link screen, set the visibility based on the default option.
+	if ( ! isset( $linkarr->link_id ) ) {
+		$linkarr->link_visible = blinks_get_default_link_visible();
+		$toread                = get_option( 'link_toread' );
+	} else {
+		$toread = (int) get_link_meta( $link->link_id, 'link_toread', true );
+	}
 	$link = new WP_Bookmark( $linkarr );
 	?>
 <div class="submitbox" id="submitlink">
@@ -232,15 +255,17 @@ function blinks_submit_meta_box( $linkarr ) {
 <div id="misc-publishing-actions">
 <div class="misc-pub-section misc-pub-private" id="visibility">
 	<label for="link_private" class="selectit">
+
 	<?php _e( 'Keep this link private' ); ?>
 	<input id="link_private" name="link_visible" type="checkbox" value="N" <?php checked( $link->link_visible, 'N' ); ?> /> 
+
 	</label>
 </div>
 <div class="misc-pub-section misc-pub-toread" id="toread">
 	<label for="link_private" class="selectit">
 	<span class="dashicons dashicons-book-alt"></span>
 	<?php _e( 'Read Later' ); ?>
-	<input id="link_toread" name="link_toread" type="checkbox" value="1" <?php checked( (int) get_link_meta( $link->link_id, 'link_toread', true ), 1 ); ?> /> 
+	<input id="link_toread" name="link_toread" type="checkbox" value="1" <?php checked( $toread, 1 ); ?> /> 
 	</label>
 </div>
 	<?php
@@ -333,3 +358,11 @@ function blinks_default_hidden_columns( $hidden, $screen ) {
 
 add_filter( 'default_hidden_columns', 'blinks_default_hidden_columns', 10, 2 );
 
+function blinks_enqueue_admin_script( $hook ) {
+	if ( 'link.php' !== $hook ) {
+		return;
+	}
+	wp_enqueue_script( 'tags-box' );
+}
+
+add_action( 'admin_enqueue_scripts', 'blinks_enqueue_admin_script' );

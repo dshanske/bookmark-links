@@ -238,9 +238,9 @@ class Blinks_Bookmark_Query {
 			if ( empty( $meta_query ) ) {
 				$meta_query = array();
 			}
-			$meta_query[] = array(
-				'key' => 'link_toread',
-				'compare' => ( $this->query_vars['toread'] ) ? 'EXISTS' : 'NOT EXISTS'
+			$meta_query[]                   = array(
+				'key'     => 'link_toread',
+				'compare' => ( $this->query_vars['toread'] ) ? 'EXISTS' : 'NOT EXISTS',
 			);
 			$this->query_vars['meta_query'] = $meta_query;
 		}
@@ -553,7 +553,7 @@ class Blinks_Bookmark_Query {
 				$groupby = "{$wpdb->links}.link_id";
 			}
 		}
-						          
+
 		if ( ! empty( $this->query_vars['date_query'] ) && is_array( $this->query_vars['date_query'] ) ) {
 			$this->date_query                         = new WP_Date_Query( $this->query_vars['date_query'], 'link_updated' );
 			$this->sql_clauses['where']['date_query'] = preg_replace( '/^\s*AND\s*/', '', $this->date_query->get_sql() );
@@ -682,7 +682,7 @@ class Blinks_Bookmark_Query {
 			'link_description',
 		);
 
-		foreach( $allowed_keys as $key ) {
+		foreach ( $allowed_keys as $key ) {
 			if ( 'link_' . $orderby === $key ) {
 				$orderby = $key;
 			}
@@ -738,7 +738,6 @@ class Blinks_Bookmark_Query {
 
 	/**
 	 * Parses various taxonomy related query vars.
-	 *
 	 *
 	 * @param array $q The query variables. Passed by reference.
 	 */
@@ -806,9 +805,9 @@ class Blinks_Bookmark_Query {
 			$cat_in     = array();
 			$cat_not_in = array();
 
-			$cat_array = preg_split( '/[,\s]+/', urldecode( $q['category'] ) );
-			$cat_array = array_map( 'intval', $cat_array );
-			$q['category']  = implode( ',', $cat_array );
+			$cat_array     = preg_split( '/[,\s]+/', urldecode( $q['category'] ) );
+			$cat_array     = array_map( 'intval', $cat_array );
+			$q['category'] = implode( ',', $cat_array );
 
 			foreach ( $cat_array as $cat ) {
 				if ( $cat > 0 ) {

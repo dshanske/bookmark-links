@@ -114,9 +114,9 @@ if ( class_exists( 'WP_Importer' ) ) {
 							wp_die( $file['error'] );
 						}
 
-						$url         = $file['url'];
-						$pinboard_url    = $file['file'];
-						$blogrolling = false;
+						$url          = $file['url'];
+						$pinboard_url = $file['file'];
+						$blogrolling  = false;
 					}
 
 					// global $opml, $updated_timestamp, $all_links, $map, $names, $urls, $targets, $descriptions, $feeds;
@@ -132,13 +132,13 @@ if ( class_exists( 'WP_Importer' ) ) {
 						}
 
 						$links = json_decode( $pinboard, true );
-						$wptz = wp_timezone();
+						$wptz  = wp_timezone();
 
-						foreach( $links as $link ) {
+						foreach ( $links as $link ) {
 							$updated = new DateTime( $link['time'] );
 							$updated->setTimeZone( $wptz );
 							$tags = explode( ' ', $link['tags'] );
-							foreach( $tags as $key => $tag ) {
+							foreach ( $tags as $key => $tag ) {
 								$tags[ $key ] = str_replace( '_', ' ', $tag );
 							}
 							$bookmark = array(
@@ -148,12 +148,12 @@ if ( class_exists( 'WP_Importer' ) ) {
 								'link_category'    => array( $cat_id ),
 								'link_updated'     => $updated->format( 'Y-m-d H:i:s' ),
 								'link_owner'       => get_current_user(),
-								'link_toread'      => ( "yes" === $link['toread'] ) ? 1 : 0,
-								'link_visibility'  => ( "yes" === $link['shared'] ) ? "Y" : "N",
+								'link_toread'      => ( 'yes' === $link['toread'] ) ? 1 : 0,
+								'link_visibility'  => ( 'yes' === $link['shared'] ) ? 'Y' : 'N',
 								'tags_input'       => $tags,
 								'meta_input'       => array(
-											'pinboard_hash' => $link['hash'],
-										)
+									'pinboard_hash' => $link['hash'],
+								),
 
 							);
 							blinks_insert_bookmark( $bookmark );

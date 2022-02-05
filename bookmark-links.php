@@ -93,8 +93,70 @@ function blinks_loader( $files, $dir = 'includes/' ) {
 	}
 }
 
-function blinks_register() {
+function blinks_options() {
+	register_setting(
+		'writing',
+		'link_visible',
+		array(
+			'type'         => 'boolean',
+			'description'  => __( 'Bookmarks Visible by Default', 'bookmark-links' ),
+			'show_in_rest' => true,
+			'default'      => 1,
+		)
+	);
 
+	register_setting(
+		'writing',
+		'link_toread',
+		array(
+			'type'         => 'boolean',
+			'description'  => __( 'Bookmarks Read Later By Default', 'bookmark-links' ),
+			'show_in_rest' => true,
+			'default'      => 0,
+		)
+	);
+}
+
+add_action( 'init', 'blinks_options' );
+
+
+function blinks_settings_field() {
+	add_settings_field(
+		'link_visible',
+		__( 'Bookmarks Visible by Default', 'bookmark-links' ),
+		'blinks_settings_checkbox',
+		'writing',
+		'default',
+		array(
+			'name' => 'link_visible',
+		)
+	);
+
+	add_settings_field(
+		'link_toread',
+		__( 'Bookmarks Read Later by Default', 'bookmark-links' ),
+		'blinks_settings_checkbox',
+		'writing',
+		'default',
+		array(
+			'name' => 'link_toread',
+		)
+	);
+}
+
+add_action( 'admin_init', 'blinks_settings_field' );
+
+function blinks_settings_checkbox( $args ) {
+	if ( ! array_key_exists( 'name', $args ) ) {
+		return;
+	}
+	$checked = (int) get_option( $args['name'] );
+	printf( '<input name="%1$s" type="hidden" value="0" />', esc_attr( $args['name'] ) ); // phpcs:ignore
+	printf( '<input name="%1$s" type="checkbox" value="1" %2$s />', esc_attr( $args['name'] ), checked( 1, $checked, false) ); // phpcs:ignore	
+}
+
+
+function blinks_register() {
 	register_taxonomy(
 		'link_tag',
 		'link',
@@ -110,10 +172,11 @@ function blinks_register() {
 				'update_item'                => __( 'Update Link Tag' ),
 				'add_new_item'               => __( 'Add New Link Tag' ),
 				'new_item_name'              => __( 'New Link Tag Name' ),
-				'separate_items_with_commas' => null,
-				'add_or_remove_items'        => null,
-				'choose_from_most_used'      => null,
+				'separate_items_with_commas' => __( 'Separate Items with Commas' ),
+				'add_or_remove_items'        => __( 'Add Link Tag' ),
+				'choose_from_most_used'      => __( 'Choose From Most Used', 'default' ),
 				'back_to_items'              => __( '&larr; Go to Link Categories' ),
+				'no_terms'                   => __( 'No Terms' ),
 			),
 			'capabilities'         => array(
 				'manage_terms' => 'manage_links',

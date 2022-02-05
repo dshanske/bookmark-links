@@ -30,7 +30,7 @@ require_once ABSPATH . 'wp-admin/includes/meta-boxes.php';
 
 add_meta_box( 'linksubmitdiv', __( 'Save', 'default' ), 'blinks_submit_meta_box', null, 'side', 'core' );
 add_meta_box( 'linkcategorydiv', __( 'Categories', 'default' ), 'link_categories_meta_box', null, 'side', 'core' );
-add_meta_box( 'linktagdiv', __( 'Tags', 'bookmark-links', 'default' ), 'link_tags_meta_box', null, 'side', 'core' );
+add_meta_box( 'linktagsdiv', __( 'Tags', 'bookmark-links', 'default' ), 'link_tags_meta_box', null, 'side', 'core', array( 'taxonomy' => 'link_tag' ) );
 add_meta_box( 'linkratingsdiv', __( 'Ratings', 'bookmark-links', 'default' ), 'blinks_ratings_meta_box', null, 'side', 'core' );
 add_meta_box( 'linktargetdiv', __( 'Target', 'default' ), 'link_target_meta_box', null, 'normal', 'core' );
 add_meta_box( 'linkxfndiv', __( 'Link Relationship (XFN)', 'default' ), 'link_xfn_meta_box', null, 'normal', 'core' );
