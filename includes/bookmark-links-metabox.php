@@ -230,7 +230,7 @@ function blinks_submit_meta_box( $linkarr ) {
 		$linkarr->link_visible = blinks_get_default_link_visible();
 		$toread                = get_option( 'link_toread' );
 	} else {
-		$toread = (int) get_link_meta( $link->link_id, 'link_toread', true );
+		$toread = (int) get_link_meta( $linkarr->link_id, 'link_toread', true );
 	}
 	$link = new WP_Bookmark( $linkarr );
 	?>
