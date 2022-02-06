@@ -189,6 +189,7 @@ function blinks_register() {
 			'public'               => false,
 			'show_ui'              => true,
 			'show_admin_column'    => true,
+			'show_in_rest'         => true,
 			'meta_box_sanitize_cb' => 'taxonomy_meta_box_sanitize_cb_input',
 		)
 	);
@@ -316,3 +317,11 @@ function blinks_link_php() {
 
 add_action( 'load-link.php', 'blinks_link_php' );
 
+function blinks_category_taxonomy( $args, $taxonomy ) {
+	if ( 'link_category' === $taxonomy ) {
+		$args['show_in_rest'] = true;
+	}
+	return $args;
+}
+
+add_filter( 'register_taxonomy_args', 'blinks_category_taxonomy', 10, 2 );

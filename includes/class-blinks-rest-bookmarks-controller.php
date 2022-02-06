@@ -333,6 +333,13 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 				)
 			);
 		}
+		if ( ! $this->check_assign_terms_permission( $request ) ) {
+			return new WP_Error(
+				'rest_cannot_assign_term',
+				__( 'Sorry, you are not allowed to assign the provided terms.' ),
+				array( 'status' => rest_authorization_required_code() )
+			);
+		}
 
 		return true;
 	}
@@ -363,6 +370,13 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 		do_action( 'rest_insert_bookmark', $bookmark, $request, true );
 
 		$schema = $this->get_item_schema();
+
+		$terms_update = $this->handle_terms( $bookmark->link_id, $request );
+
+		if ( is_wp_error( $terms_update ) ) {
+			return $terms_update;
+		}
+
 		if ( ! empty( $schema['properties']['meta'] ) && isset( $request['meta'] ) ) {
 			$meta_update = $this->meta->update_value( $request['meta'], $bookmark->link_id );
 
@@ -700,6 +714,16 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 			$data['meta'] = $this->meta->get_value( $item->link_id, $request );
 		}
 
+		$taxonomies = wp_list_filter( get_object_taxonomies( 'link', 'objects' ), array( 'show_in_rest' => true ) );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+			if ( rest_is_field_included( $base, $fields ) ) {
+				$terms         = get_link_terms( $item->link_id, $taxonomy->name );
+				$data[ $base ] = $terms ? array_values( wp_list_pluck( $terms, 'term_id' ) ) : array();
+			}
+		}
+
 		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
 		$data    = $this->add_additional_fields_to_object( $data, $request );
 		$data    = $this->filter_response_by_context( $data, $context );
@@ -728,6 +752,7 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 	 */
 	protected function prepare_links( $bookmark ) {
 		$base  = $this->namespace . '/' . $this->rest_base;
+		$href  = rest_url( "{$this->namespace}/{$this->rest_base}/{id}" );
 		$links = array(
 			'self'       => array(
 				'href' => rest_url( trailingslashit( $base ) . $bookmark->link_id ),
@@ -735,13 +760,36 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 			'collection' => array(
 				'href' => rest_url( $base ),
 			),
-			'about'      => array(
-				'href' => rest_url( sprintf( 'blinks/v1/bookmark/' ) ),
-			),
 			'owner'      => array(
 				'href' => rest_url( 'wp/v2/users/' . $bookmark->link_owner ),
 			),
 		);
+
+		$taxonomies = get_object_taxonomies( 'link' );
+
+		if ( ! empty( $taxonomies ) ) {
+			$links['https://api.w.org/term'] = array();
+
+			foreach ( $taxonomies as $tax ) {
+				$taxonomy_route = rest_get_route_for_taxonomy_items( $tax );
+
+				// Skip taxonomies that are not public.
+				if ( empty( $taxonomy_route ) ) {
+					continue;
+				}
+				$terms_url = add_query_arg(
+					'post',
+					$bookmark->link_id,
+					rest_url( $taxonomy_route )
+				);
+
+				$links['https://api.w.org/term'][] = array(
+					'href'       => $terms_url,
+					'taxonomy'   => $tax,
+					'embeddable' => true,
+				);
+			}
+		}
 
 		return $links;
 	}
@@ -890,6 +938,37 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 			),
 		);
 
+		$taxonomies = wp_list_filter( get_object_taxonomies( 'link', 'objects' ), array( 'show_in_rest' => true ) );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+
+			if ( array_key_exists( $base, $schema['properties'] ) ) {
+				$taxonomy_field_name_with_conflict = ! empty( $taxonomy->rest_base ) ? 'rest_base' : 'name';
+				_doing_it_wrong(
+					'register_taxonomy',
+					sprintf(
+						/* translators: 1: The taxonomy name, 2: The property name, either 'rest_base' or 'name', 3: The conflicting value. */
+						__( 'The "%1$s" taxonomy "%2$s" property (%3$s) conflicts with an existing property on the Bookmarks Controller. Specify a custom "rest_base" when registering the taxonomy to avoid this error.' ),
+						$taxonomy->name,
+						$taxonomy_field_name_with_conflict,
+						$base
+					),
+					'5.4.0'
+				);
+			}
+
+			$schema['properties'][ $base ] = array(
+				/* translators: %s: Taxonomy name. */
+				'description' => sprintf( __( 'The terms assigned to the bookmark in the %s taxonomy.' ), $taxonomy->name ),
+				'type'        => 'array',
+				'items'       => array(
+					'type' => 'integer',
+				),
+				'context'     => array( 'view', 'edit' ),
+			);
+		}
+
 		$schema['properties']['meta'] = $this->meta->get_field_schema();
 
 		$this->schema = $schema;
@@ -981,4 +1060,60 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 		 */
 		return apply_filters( 'rest_bookmarks_collection_params', $query_params );
 	}
+
+	/**
+	 * Updates the bookmarks's terms from a REST request.
+	 *
+	 * @param int             $link_id The link ID to update the terms for.
+	 * @param WP_REST_Request $request The request object with post and terms data.
+	 * @return null|WP_Error WP_Error on an error assigning any of the terms, otherwise null.
+	 */
+	protected function handle_terms( $link_id, $request ) {
+		$taxonomies = wp_list_filter( get_object_taxonomies( 'link', 'objects' ), array( 'show_in_rest' => true ) );
+
+		foreach ( $taxonomies as $taxonomy ) {
+			$base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+
+			if ( ! isset( $request[ $base ] ) ) {
+				continue;
+			}
+
+			$result = wp_set_object_terms( $link_id, $request[ $base ], $taxonomy->name );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+		}
+	}
+
+	/**
+	 * Checks whether current user can assign all terms sent with the current request.
+	 *
+	 * @param WP_REST_Request $request The request object with link and terms data.
+	 * @return bool Whether the current user can assign the provided terms.
+	 */
+	protected function check_assign_terms_permission( $request ) {
+		$taxonomies = wp_list_filter( get_object_taxonomies( 'link', 'objects' ), array( 'show_in_rest' => true ) );
+		foreach ( $taxonomies as $taxonomy ) {
+			$base = ! empty( $taxonomy->rest_base ) ? $taxonomy->rest_base : $taxonomy->name;
+
+			if ( ! isset( $request[ $base ] ) ) {
+				continue;
+			}
+
+			foreach ( (array) $request[ $base ] as $term_id ) {
+				// Invalid terms will be rejected later.
+				if ( ! get_term( $term_id, $taxonomy->name ) ) {
+					continue;
+				}
+
+				if ( ! current_user_can( 'assign_term', (int) $term_id ) ) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 }
