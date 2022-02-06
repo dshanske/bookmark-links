@@ -194,44 +194,50 @@ function blinks_register() {
 	);
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Date Link was Published', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Date Link was Published', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_published', $args );
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Link Author Name', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Link Author Name', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_author', $args );
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Link Author URL', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Link Author URL', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_author_url', $args );
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Link Author Photo', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Link Author Photo', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_author_photo', $args );
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Link Site', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Link Site', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_site', $args );
 
 	$args = array(
-		'type'        => 'string',
-		'description' => __( 'Link Site URL', 'bookmark-links' ),
-		'single'      => true,
+		'type'         => 'string',
+		'description'  => __( 'Link Site URL', 'bookmark-links' ),
+		'single'       => true,
+		'show_in_rest' => true,
 	);
 	register_meta( 'link', 'link_site_url', $args );
 
@@ -249,6 +255,8 @@ function blinks_load() {
 		array(
 			'compat-functions.php',
 			'bookmark-functions.php',
+			'class-blinks-rest-bookmarks-controller.php',
+			'class-blinks-rest-link-meta-fields.php',
 			'class-blinks-bookmark-query.php',
 			'functions.php',
 			'class-wp-bookmark.php',
@@ -260,6 +268,14 @@ function blinks_load() {
 }
 
 add_action( 'plugins_loaded', 'blinks_load' );
+
+
+function blinks_rest_api() {
+	$controller = new Blinks_REST_Bookmarks_Controller();
+	$controller->register_routes();
+}
+
+add_action( 'rest_api_init', 'blinks_rest_api' );
 
 
 function blinks_link_manager() {

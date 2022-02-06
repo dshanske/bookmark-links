@@ -160,7 +160,7 @@ final class WP_Bookmark {
 			}
 
 			$_bookmark->link_category = array_unique( wp_get_object_terms( $_bookmark->link_id, 'link_category', array( 'fields' => 'ids' ) ) );
-			$_bookmark->link_type     = $this->type( $_bookmark );
+			$_bookmark->link_type     = self::type( $_bookmark );
 
 			$_bookmark = sanitize_bookmark( $_bookmark, 'raw' );
 			wp_cache_add( $_bookmark->link_id, $_bookmark, 'bookmark' );
@@ -248,10 +248,10 @@ final class WP_Bookmark {
 	 *
 	 * @return string Type.
 	 */
-	public function type( $bookmark ) {
+	public static function type( $bookmark ) {
 		if ( isset( $bookmark->link_rss ) && '' === $bookmark->link_rss ) {
 			return 'single';
-		} elseif ( isset( $bookmark->link_rss ) && $bookmark->link_url === $this->link_rss ) {
+		} elseif ( isset( $bookmark->link_rss ) && $bookmark->link_url === $bookmark->link_rss ) {
 			return 'h-feed';
 		} else {
 			return 'feed';

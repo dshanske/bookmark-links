@@ -143,8 +143,6 @@ class Blinks_Bookmark_Query {
 	 *                                                    Default ''.
 	 *     @type int          $link_rating                     Rating to retrieve matching bookmarks for.
 	 *                                                   Default empty.
-	 *     @type string       $link_visible                   Filter by visible parameter.
-	 *                                                   Default ''. If hide_invisible is set, this parameter will be unset.
 	 *     @type int|bool     $hide_invisible            Whether to only show links marked as visible.
 	 *                                                   Accepts 1|true or 0|false. Default 1|true.
 	 *     @type int|bool     $toread                    Whether to only show links marked as read later.
@@ -200,8 +198,6 @@ class Blinks_Bookmark_Query {
 			'date_query'                 => null, // See WP_Date_Query.
 			'fields'                     => '',
 			'rating'                     => '',
-			'visible'                    => '',
-			'hide_invisible'             => '1',
 			'meta_key'                   => '',
 			'meta_value'                 => '',
 			'meta_query'                 => '',
@@ -214,6 +210,7 @@ class Blinks_Bookmark_Query {
 			'cache_domain'               => 'core',
 			'update_bookmark_meta_cache' => true,
 			'search'                     => '',
+			'hide_invisible'             => 1,
 		);
 
 		if ( ! empty( $query ) ) {
@@ -493,7 +490,11 @@ class Blinks_Bookmark_Query {
 		}
 
 		if ( 1 === (int) $this->query_vars['hide_invisible'] ) {
-			$this->sql_clauses['where']['hide_invisible'] = $wpdb->prepare( 'link_visible = %s', 'Y' );
+			$this->sql_clauses['where']['hide_invisible'] = $wpdb->prepare( 'link_visible <> %s', 'N' );
+		}
+
+		if ( isset( $this->query_vars['visible'] ) && '' !== (int) $this->query_vars['visible'] ) {
+			$this->sql_clauses['where']['visible'] = $wpdb->prepare( 'link_visible = %s', $this->query_vars['visible'] );
 		}
 
 		if ( '' !== $this->query_vars['name'] ) {

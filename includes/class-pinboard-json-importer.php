@@ -147,7 +147,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 								'link_description' => $link['extended'],
 								'link_category'    => array( $cat_id ),
 								'link_updated'     => $updated->format( 'Y-m-d H:i:s' ),
-								'link_owner'       => get_current_user(),
+								'link_owner'       => get_current_user_id(),
 								'link_toread'      => ( 'yes' === $link['toread'] ) ? 1 : 0,
 								'link_visibility'  => ( 'yes' === $link['shared'] ) ? 'Y' : 'N',
 								'tags_input'       => $tags,

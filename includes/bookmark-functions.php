@@ -180,14 +180,22 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 		$link_id = (int) $wpdb->insert_id;
 	}
 
-	wp_set_link_cats( $link_id, $link_category );
-
-	if ( isset( $linkdata['tags_input'] ) && is_object_in_taxonomy( 'link', 'link_tag' ) ) {
-		wp_set_object_terms( $link_id, $linkdata['tags_input'], 'link_tag' );
+	// If $link_categories isn't already an array, make it one:
+	if ( ! is_array( $link_category ) || 0 === count( $link_category ) ) {
+		$link_category = array( get_option( 'default_link_category' ) );
 	}
 
-	if ( ! empty( $linkdata['tax_input'] ) ) {
-		foreach ( $linkdata['tax_input'] as $taxonomy => $tags ) {
+	$link_category = array_map( 'intval', $link_category );
+	$link_category = array_unique( $link_category );
+
+	wp_set_object_terms( $link_id, $link_category, 'link_category' );
+
+	if ( isset( $parsed_args['tags_input'] ) && is_object_in_taxonomy( 'link', 'link_tag' ) ) {
+		wp_set_object_terms( $link_id, $parsed_args['tags_input'], 'link_tag' );
+	}
+
+	if ( ! empty( $parsed_args['tax_input'] ) ) {
+		foreach ( $parsed_args['tax_input'] as $taxonomy => $tags ) {
 			$taxonomy_obj = get_taxonomy( $taxonomy );
 
 			if ( ! $taxonomy_obj ) {
@@ -205,8 +213,8 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 		}
 	}
 
-	if ( isset( $linkdata['link_toread'] ) ) {
-		if ( $linkdata['link_toread'] ) {
+	if ( isset( $parsed_args['link_toread'] ) ) {
+		if ( $parsed_args['link_toread'] ) {
 			update_link_meta( $link_id, 'link_toread', 1 );
 		} else {
 			delete_link_meta( $link_id, 'link_toread' );
@@ -216,17 +224,17 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	}
 
 	foreach ( array( 'link_site', 'link_site_url', 'link_author', 'link_author', 'link_author_url', 'link_author_photo' ) as $property ) {
-		if ( isset( $linkdata[ $property ] ) ) {
-			if ( empty( $linkdata[ $property ] ) ) {
+		if ( isset( $parsed_args[ $property ] ) ) {
+			if ( empty( $parsed_args[ $property ] ) ) {
 				delete_link_meta( $link_id, $property );
 			} else {
-				update_link_meta( $link_id, $property, $linkdata[ $property ] );
+				update_link_meta( $link_id, $property, $parsed_args[ $property ] );
 			}
 		}
 	}
 
-	if ( ! empty( $linkdata['meta_input'] ) ) {
-		foreach ( $linkdata['meta_input'] as $field => $value ) {
+	if ( ! empty( $parsed_args['meta_input'] ) ) {
+		foreach ( $parsed_args['meta_input'] as $field => $value ) {
 			update_link_meta( $link_id, $field, $value );
 		}
 	}
@@ -343,8 +351,9 @@ function blinks_delete_bookmark( $link_id ) {
  * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
  */
 function blinks_update_bookmark( $linkdata, $wp_error = false ) {
-	$link_id = (int) $linkdata['link_id'];
-	$link    = blinks_get_bookmark( $link_id, ARRAY_A );
+	$linkdata = (array) $linkdata;
+	$link_id  = (int) $linkdata['link_id'];
+	$link     = blinks_get_bookmark( $link_id, ARRAY_A );
 	// Escape data pulled from DB.
 	$link = wp_slash( $link );
 
