@@ -1,16 +1,6 @@
-=== Bookmark Links ===
-Contributors: dshanske
-Tags: links, bookmarks, readlater
-Requires at least: 4.9
-Tested up to: 5.8
-Stable tag: trunk
-Requires PHP: 5.6
-License: GPLv2 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
- 
 Updated the disabled link manager functionality in WordPress, originally designed as a blogroll, to act as a bookmarking system.
 
-== Description == 
+## Description
 
 This plugin recreates the old link manager in WordPress as an extensible booking system. 
 
@@ -20,7 +10,7 @@ list table, tags, a Query class, a REST API endpoint, etc.
 
 You can now set the default visibility if you want things private by default.
 
-== Why not just create something new? ==
+## Why not just create something new?
 
 I wanted to self-host my bookmarks, instead of using a third-party service, but delayed for a long time because nothing out there quite worked for me.
 Then one day the paid service I was using went down all day. It eventually came back up, but nothing from the maintainer...not even a post on the site about it.
@@ -28,11 +18,11 @@ Then one day the paid service I was using went down all day. It eventually came 
 So I decided to write my own. Other than that challenge, this turns a long abandoned WordPress feature into something useful. You can create a blogroll using a link category.
 You can store your bookmarks. You can use the added Read Later property to make it work like Read Later services.
 
-== What additional properties are added? ==
+## What additional properties are added?
 
 With Link Metadata added, you can add whatever new properties you want. Built into the plugin, in addition
 
-== Backward Compatibility Breaks ==
+## Backward Compatibility Breaks
 
 The updated field in the link object was previously used for a different purpose, which was deprecated in 2010. This plugin repurposes it as a simple
 last modified field. While this is technically a backward compatibility breakage, the field was entirely unused.
@@ -42,4 +32,5 @@ change here. If the bookmark is a feed, then this field should not be empty or i
 
 The image address field is renamed as the Featured Image field. The original recommendation was for a small favicon, but this allows for any size featured image to account for single and feed posts.
 
-The Notes field is now rendered in the UI as a rich text field. 
+The Notes field is now rendered in the UI as a rich text field.
+
