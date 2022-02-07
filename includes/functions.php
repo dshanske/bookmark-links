@@ -79,8 +79,7 @@ if ( ! function_exists( 'update_link_meta' ) ) {
 	}
 }
 
-
-function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
+function get_link_terms( $link_id, $taxonomy ) {
 	$link_id = (int) $link_id;
 	if ( ! $link_id ) {
 		return false;
@@ -95,7 +94,12 @@ function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
 	if ( ! $terms ) {
 		return false;
 	}
-	if ( is_wp_error( $terms ) ) {
+	return $terms;
+}
+
+function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
+	$terms = get_link_terms( $link_id, $taxonomy );
+	if ( is_wp_error( $terms ) || ! $terms ) {
 		return $terms;
 	}
 	$term_names = array();
