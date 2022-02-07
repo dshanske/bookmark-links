@@ -849,7 +849,6 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 					'arg_options' => array(
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'required'    => true,
 				),
 				'image'       => array(
 					'description' => __( 'Featured Image for the Bookmark.' ),
