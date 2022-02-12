@@ -619,6 +619,32 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 			$prepared_bookmark->link_toread = (int) $request['toread'];
 		}
 
+		if ( isset( $prepared_bookmark->link_url ) ) {
+			$parse = new Parse_This( $prepared_bookmark->link_url );
+			$fetch = $parse->fetch();
+			if ( ! is_wp_error( $fetch ) ) {
+				$parse->parse();
+				$results = $parse->get();
+				if ( empty( $prepared_bookmark->link_name ) && isset( $results['name'] ) ) {
+					$prepared_bookmark->link_name = $results['name'];
+				}
+				if ( empty( $prepared_bookmark->link_image ) && isset( $results['featured'] ) ) {
+					$prepared_bookmark->link_image = $results['featured'];
+				}
+				if ( isset( $results['author'] ) ) {
+					if ( isset( $results['author']['name'] ) && empty( $prepared_bookmark->link_author ) ) {
+						$prepared_bookmark->link_author = $results['author']['name'];
+					}
+					if ( isset( $results['author']['url'] ) && empty( $prepared_bookmark->link_author_url ) ) {
+						$prepared_bookmark->link_author_url = $results['author']['url'];
+					}
+					if ( isset( $results['author']['photo'] ) && empty( $prepared_bookmark->link_author_photo ) ) {
+						$prepared_bookmark->link_author_photo = $results['author']['photo'];
+					}
+				}
+			}
+		}
+
 		/**
 		 * Filters bookmark data before inserting bookmark via the REST API.
 		 *
