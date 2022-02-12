@@ -94,6 +94,10 @@ function blinks_advanced_meta_box( $link ) {
 			<td><input type="text" name="link_image" class="code" id="link_image" maxlength="255" value="<?php echo ( isset( $link->link_image ) ? esc_attr( $link->link_image ) : '' ); ?>" /></td>
 		</tr>
 		<tr>
+			<th scope="row"><label for="link_published"><?php _e( 'Date Item was Published' ); ?></label></th>
+			<td><input type="text" name="link_published" class="code" id="link_published" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_published' ); ?>" /></td>
+		</tr>
+		<tr>
 			<th scope="row"><label for="link_author"><?php _e( 'Author Name' ); ?></label></th>
 			<td><input type="text" name="link_author" class="code" id="link_author" maxlength="255" value="<?php echo blinks_form_get_meta( $link, 'link_author' ); ?>" /></td>
 		</tr>
@@ -359,10 +363,46 @@ function blinks_default_hidden_columns( $hidden, $screen ) {
 add_filter( 'default_hidden_columns', 'blinks_default_hidden_columns', 10, 2 );
 
 function blinks_enqueue_admin_script( $hook ) {
-	if ( 'link.php' !== $hook ) {
+	if ( ! in_array( $hook, array( 'link.php', 'link-add.php' ), true ) ) {
 		return;
 	}
 	wp_enqueue_script( 'tags-box' );
+
+	wp_enqueue_script(
+		'linkmeta',
+		plugins_url( 'js/bookmarks.js', dirname( __FILE__ ) ),
+		array( 'jquery' ),
+		'0.0.1',
+		true
+	);
+
+			// Provide a global object to our JS file containing our REST API endpoint, and API nonce
+			// Nonce must be 'wp_rest'
+			wp_localize_script(
+				'linkmeta',
+				'PKAPI',
+				array(
+					'api_nonce'       => wp_create_nonce( 'wp_rest' ),
+					'api_url'         => rest_url( '/parse-this/1.0/' ),
+					'success_message' => __( 'Your URL has been successfully retrieved and parsed', 'bookmark-links' ),
+					'clear_message'   => __( 'Are you sure you want to clear post properties?', 'bookmark-links' ),
+				)
+			);
 }
 
 add_action( 'admin_enqueue_scripts', 'blinks_enqueue_admin_script' );
+
+function sanitize_link_description( $value, $link_id = null, $context = null ) {
+	if ( is_string( $value ) ) {
+		if ( mb_strlen( $value ) > 253 ) {
+			$return = mb_substr( $value, 0, 253 );
+		} else {
+			$return = $value;
+		}
+		$return = wp_strip_all_tags( $return );
+		$return = sanitize_text_field( trim( $return ) );
+	}
+	return $value;
+}
+
+add_filter( 'pre_link_description', 'sanitize_link_description', 11 );

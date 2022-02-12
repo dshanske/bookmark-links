@@ -265,6 +265,22 @@ function blinks_load() {
 			'class-pinboard-json-importer.php',
 		)
 	);
+
+	$parse_this_load = array(
+		'compat-functions.php',
+		'autoload.php',
+		'functions.php',
+	);
+
+	if ( ! class_exists( 'REST_Parse_This' ) ) {
+		$parse_this_load[] = 'class-rest-parse-this.php';
+	}
+
+	blinks_loader(
+		$parse_this_load,
+		'/lib/parse-this/includes/'
+	);
+
 	blinks_register();
 }
 

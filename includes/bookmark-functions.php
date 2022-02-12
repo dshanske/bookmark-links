@@ -126,11 +126,11 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	$link_rating      = ( ! empty( $parsed_args['link_rating'] ) ) ? $parsed_args['link_rating'] : 0;
 	$link_image       = ( ! empty( $parsed_args['link_image'] ) ) ? $parsed_args['link_image'] : '';
 	$link_target      = ( ! empty( $parsed_args['link_target'] ) ) ? $parsed_args['link_target'] : '';
-	$link_visible     = ( ! empty( $parsed_args['link_visible'] ) ) ? $parsed_args['link_visible'] : 'Y';
+	$link_visible     = ( ! empty( $parsed_args['link_visible'] ) ) ? $parsed_args['link_visible'] : blinks_get_default_link_visible();
 	$link_owner       = ( ! empty( $parsed_args['link_owner'] ) ) ? $parsed_args['link_owner'] : get_current_user_id();
 	$link_updated     = ( ! empty( $parsed_args['link_updated'] ) ) ? $parsed_args['link_updated'] : current_time( 'mysql' );
 	$link_notes       = ( ! empty( $parsed_args['link_notes'] ) ) ? $parsed_args['link_notes'] : '';
-	$link_description = ( ! empty( $parsed_args['link_description'] ) ) ? $parsed_args['link_description'] : blinks_get_default_link_visible();
+	$link_description = ( ! empty( $parsed_args['link_description'] ) ) ? $parsed_args['link_description'] : '';
 	$link_rss         = ( ! empty( $parsed_args['link_rss'] ) ) ? $parsed_args['link_rss'] : '';
 	$link_rel         = ( ! empty( $parsed_args['link_rel'] ) ) ? $parsed_args['link_rel'] : '';
 	$link_category    = ( ! empty( $parsed_args['link_category'] ) ) ? $parsed_args['link_category'] : array();
@@ -223,7 +223,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 		delete_link_meta( $link_id, 'link_toread' );
 	}
 
-	foreach ( array( 'link_site', 'link_site_url', 'link_author', 'link_author', 'link_author_url', 'link_author_photo' ) as $property ) {
+	foreach ( array_keys( get_registered_meta_keys( 'link' ) ) as $property ) {
 		if ( isset( $parsed_args[ $property ] ) ) {
 			if ( empty( $parsed_args[ $property ] ) ) {
 				delete_link_meta( $link_id, $property );

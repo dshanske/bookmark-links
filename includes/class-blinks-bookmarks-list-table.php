@@ -71,6 +71,18 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$args['number'] = $per_page + min( 8, $per_page ); // Grab a few extra.
 		}
 
+		if ( isset( $_REQUEST['orderby'] ) ) {
+			$args['orderby'] = sanitize_key( $_REQUEST['orderby'] );
+		} else {
+			$args['orderby'] = 'updated';
+		}
+
+		if ( isset( $_REQUEST['order'] ) ) {
+			$args['order'] = sanitize_key( $_REQUEST['order'] );
+		} else {
+			$args['order'] = 'DESC';
+		}
+
 		$page = $this->get_pagenum();
 
 		if ( isset( $_REQUEST['start'] ) ) {
@@ -85,7 +97,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 
 		$args['offset'] = $start;
 
-		$query_var = array( 'action', 'orderby', 'link_id', 'order', 'taxonomy', 'term', 'toread', 'paged' );
+		$query_var = array( 'action', 'link_id', 'taxonomy', 'term', 'toread', 'paged' );
 
 		foreach ( $query_var as $var ) {
 			if ( array_key_exists( $var, $_REQUEST ) ) {
