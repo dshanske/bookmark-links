@@ -628,9 +628,22 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 				if ( empty( $prepared_bookmark->link_name ) && isset( $results['name'] ) ) {
 					$prepared_bookmark->link_name = $results['name'];
 				}
-				if ( empty( $prepared_bookmark->link_image ) && isset( $results['featured'] ) ) {
-					$prepared_bookmark->link_image = $results['featured'];
+				if ( empty( $prepared_bookmark->link_image ) ) {
+					if ( isset( $results['featured'] ) ) {
+						$prepared_bookmark->link_image = $results['featured'];
+					} elseif ( isset( $results['photo'] ) ) {
+						if ( is_string( $results['photo'] ) ) {
+							$prepared_bookmark->link_image = $results['photo'];
+						} elseif ( is_array( $results['photo'] ) ) {
+							$prepared_bookmark->link_image = $results['photo'][0];
+						}
+					}
 				}
+
+				if ( empty( $prepared_bookmark->link_published ) && isset( $results['published'] ) ) {
+					$prepared_bookmark->link_published = $results['published'];
+				}
+
 				if ( isset( $results['author'] ) ) {
 					if ( isset( $results['author']['name'] ) && empty( $prepared_bookmark->link_author ) ) {
 						$prepared_bookmark->link_author = $results['author']['name'];
