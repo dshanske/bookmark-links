@@ -529,3 +529,177 @@ function get_bookmark_action_link( $link = 0, $action = 'edit' ) {
 	$action   = $action . '-bookmark_' . $link->link_id;
 	return wp_nonce_url( $location, $action );
 }
+
+/**
+ * Return a list of bookmarks
+ *
+ * @param int|WP_Bookmark $bookmarks Array of Bookmarks
+ * @param array Arguments
+ * @return string
+ */
+function blinks_list_bookmarks( $bookmarks, $args = array() ) {
+	$defaults    = array(
+		'show_updated'     => 0,
+		'show_description' => 1,
+		'show_images'      => 0,
+		'show_name'        => 1,
+		'before'           => '<li>',
+		'after'            => '</li>',
+		'between'          => "\n",
+		'show_rating'      => 0,
+		'link_before'      => '',
+		'link_after'       => '',
+		'container'        => 'ul',
+		'container-class'  => 'bookmarks',
+	);
+	$parsed_args = wp_parse_args( $args, $defaults );
+	$content     = '';
+	foreach ( $bookmarks as $bookmark ) {
+		$content .= $parsed_args['before'] . blinks_get_the_bookmark(
+			$bookmark,
+			$parsed_args
+		) . $parsed_args['after'];
+	}
+	return sprintf( '<%1$s class="%2$s">%3$s</%1$s>', $parsed_args['container'], $parsed_args['container-class'], $content );
+}
+
+/**
+ * Return a marked up single bookmark.
+ *
+ * @param int|WP_Bookmark $bookmark Bookmark
+ * @param array           $args Arguments.
+ * @return string Outputted string.
+ */
+function blinks_get_the_bookmark( $bookmark, $args = array() ) {
+	$defaults    = array(
+		'show_updated'     => 0,
+		'show_description' => 1,
+		'show_images'      => 0,
+		'show_name'        => 1,
+		'between'          => "\n",
+		'show_rating'      => 0,
+		'link_before'      => '',
+		'link_after'       => '',
+	);
+	$parsed_args = wp_parse_args( $args, $defaults );
+
+	$bookmark = blinks_get_bookmark( $bookmark );
+	if ( ! $bookmark ) {
+		return '';
+	}
+
+	$output = $parsed_args['before'];
+
+	if ( $parsed_args['show_updated'] ) {
+		$output .= '<em>';
+	}
+
+		$the_link = '#';
+	if ( ! empty( $bookmark->link_url ) ) {
+		$the_link = esc_url( $bookmark->link_url );
+	}
+
+		$desc  = esc_attr( sanitize_bookmark_field( 'link_description', $bookmark->link_description, $bookmark->link_id, 'display' ) );
+		$name  = esc_attr( sanitize_bookmark_field( 'link_name', $bookmark->link_name, $bookmark->link_id, 'display' ) );
+		$title = $desc;
+
+	if ( $parsed_args['show_updated'] && '00' !== substr( $bookmark->link_updated, 0, 2 ) ) {
+		$updated = get_link_datetime( $bookmark );
+		$title  .= ' (';
+		$title  .= sprintf(
+			/* translators: %s: Date and time of last update. */
+			__( 'Last updated: %s' ),
+			$updated->format( get_option( 'date_format' ) )
+		);
+		$title .= ')';
+	}
+		$alt = ' alt="' . $name . ( $args['show_description'] ? ' ' . $title : '' ) . '"';
+
+	if ( '' !== $title ) {
+		$title = ' title="' . $title . '"';
+	}
+
+	$rel = $bookmark->link_rel;
+
+	$target = $bookmark->link_target;
+
+	if ( '' !== $target ) {
+		if ( is_string( $rel ) && '' !== $rel ) {
+			if ( ! str_contains( $rel, 'noopener' ) ) {
+				$rel = trim( $rel ) . ' noopener';
+			}
+		} else {
+			$rel = 'noopener';
+		}
+
+		$target = ' target="' . $target . '"';
+	}
+
+	if ( '' !== $rel ) {
+		$rel = ' rel="' . esc_attr( $rel ) . '"';
+	}
+
+	$output .= '<a href="' . $the_link . '"' . $rel . $title . $target . '>';
+	$output .= $args['link_before'];
+
+	if ( null != $bookmark->link_image && $parsed_args['show_images'] ) {
+		if ( strpos( $bookmark->link_image, 'http' ) === 0 ) {
+			$output .= "<img src=\"$bookmark->link_image\" $alt $title />";
+		} else { // If it's a relative path.
+			$output .= '<img src="' . get_option( 'siteurl' ) . "$bookmark->link_image\" $alt $title />";
+		}
+		if ( $parsed_args['show_name'] ) {
+			$output .= " $name";
+		}
+	} else {
+		$output .= $name;
+	}
+
+		$output .= $parsed_args['link_after'];
+
+		$output .= '</a>';
+
+	if ( $parsed_args['show_updated'] ) {
+		$output .= '</em>';
+	}
+
+	if ( $parsed_args['show_description'] && '' !== $desc ) {
+		$output .= $parsed_args['between'] . $desc;
+	}
+
+	if ( $parsed_args['show_rating'] ) {
+		$output .= $parsed_args['between'] . sanitize_bookmark_field(
+			'link_rating',
+			$bookmark->link_rating,
+			$bookmark->link_id,
+			'display'
+		);
+	}
+	$output .= $parsed_args['after'] . "\n";
+	return $output;
+
+}
+
+
+/*
+ * Make Bookmark Post using a list of links
+ *
+ * $param array $links An array of link_ids or of WP_Bookmark Objects
+ * @return int Post ID.
+ */
+
+function blinks_make_post( $links ) {
+	$content = blinks_list_bookmarks(
+		$links,
+		array(
+			'before' => '<li>',
+			'after'  => '</li>',
+		)
+	);
+	return wp_insert_post(
+		array(
+			'post_content' => $content,
+			'post_status'  => 'draft',
+		)
+	);
+}

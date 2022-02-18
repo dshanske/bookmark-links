@@ -44,6 +44,15 @@ if ( $doaction && isset( $_REQUEST['linkcheck'] ) ) {
 			update_link_meta( $link_id, 'link_toread', 1 );
 		}
 		$redirect_to = add_query_arg( 'toreaded', count( $bulklinks ), $redirect_to );
+	} elseif ('post' === $doaction ) {
+		$post_id = blinks_make_post( $bulklinks );
+		$redirect_to = add_query_arg(
+				array(
+					'post' => $post_id,
+					'action' => 'edit'
+				),
+				admin_url( 'post.php' )
+			);
 	} else {
 		$screen = get_current_screen()->id;
 
