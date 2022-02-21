@@ -149,7 +149,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$actions['delete'] = __( 'Delete' );
 		$actions['read']   = __( 'Mark Read', 'bookmark-links' );
 		$actions['toread'] = __( 'Read Later', 'bookmark-links' );
-		$actions['post'] = __( 'Make Post', 'bookmark-links' );
+		$actions['post']   = __( 'Make Post', 'bookmark-links' );
 
 		return $actions;
 	}
@@ -236,6 +236,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'cb'         => '<input type="checkbox" />',
 			'name'       => _x( 'Name', 'link name' ),
 			'url'        => __( 'URL' ),
+			'owner'      => __( 'Owner', 'bookmark-links' ),
 			'categories' => __( 'Categories' ),
 			'tags'       => __( 'Tags' ),
 		);
@@ -289,6 +290,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'toread'  => 'toread',
 			'type'    => 'type',
 			'created' => 'created',
+			'owner'   => 'owner',
 		);
 	}
 
@@ -354,6 +356,22 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	public function column_url( $link ) {
 		$short_url = url_shorten( $link->link_url );
 		echo "<a href='$link->link_url'>$short_url</a>";
+	}
+
+	/**
+	 * Handles the link owner column output.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param object $link The current link object.
+	 */
+	public function column_owner( $link ) {
+		if ( 0 === (int) $link->link_owner ) {
+			_e( 'No Owner', 'bookmark-links' );
+		} else {
+			$user = get_user_by( 'id', $link->link_owner );
+			printf( '%1$s', esc_html( $user->display_name ) );
+		}
 	}
 
 	/**
