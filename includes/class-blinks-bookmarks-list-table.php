@@ -83,6 +83,11 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$args['order'] = 'DESC';
 		}
 
+
+		if ( isset( $_REQUEST['owner'] ) ) {
+			$args['owner__in'] = array( sanitize_key( $_REQUEST['owner'] ) );
+		}
+
 		$page = $this->get_pagenum();
 
 		if ( isset( $_REQUEST['start'] ) ) {
