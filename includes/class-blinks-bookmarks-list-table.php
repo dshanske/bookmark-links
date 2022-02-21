@@ -264,7 +264,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$link_columns['rating']  = __( 'Rating', 'default' );
 		$link_columns['toread']  = __( 'Read Later', 'bookmark-links' );
 		$link_columns['type']    = __( 'Type', 'bookmark-links' );
-		$link_columns['updated'] = __( 'Updated', 'bookmark-links' );
+		$link_columns['created'] = __( 'Created', 'bookmark-links' );
 
 		/**
 		 * Filters the columns displayed in the Bookmarks list table.
@@ -288,7 +288,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			'rating'  => 'rating',
 			'toread'  => 'toread',
 			'type'    => 'type',
-			'updated' => 'updated',
+			'created' => 'created',
 		);
 	}
 
@@ -425,22 +425,22 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	}
 
 	/**
-	 * Handles the link updated column output.
+	 * Handles the link created olumn output.
 	 *
 	 * @param object $link The current link object.
 	 */
-	public function column_updated( $link ) {
+	public function column_created( $link ) {
 		if ( '0000-00-00 00:00:00' === $link->link_updated ) {
-			echo __( 'Never Updated', 'bookmark-links' );
+			echo __( 'Not Set', 'bookmark-links' );
 		} else {
-			$updated = new DateTimeImmutable( $link->link_updated, wp_timezone() );
+			$created = new DateTimeImmutable( $link->link_updated, wp_timezone() );
 			echo sprintf(
 			/* translators: 1: Link date, 2: Link time. */
 				__( '%1$s at %2$s' ),
 				/* translators: Link date format. See https://www.php.net/manual/datetime.format.php */
-				wp_date( __( 'Y/m/d' ), $updated->getTimestamp() ),
+				wp_date( __( 'Y/m/d' ), $created->getTimestamp() ),
 				/* translators: Link time format. See https://www.php.net/manual/datetime.format.php */
-				wp_date( __( 'g:i a' ), $updated->getTimestamp() )
+				wp_date( __( 'g:i a' ), $created->getTimestamp() )
 			);
 		}
 	}

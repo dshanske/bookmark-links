@@ -299,7 +299,7 @@ function blinks_submit_meta_box( $linkarr ) {
 						<span id="timestamp">
 						<?php
 						/* translators: %s: Updated date. */
-						printf( __( 'Last Updated: %s' ), '<b>' . $updated . '</b>' );
+						printf( __( 'Created: %s' ), '<b>' . $updated . '</b>' );
 						?>
 						</span>
 						</div>
