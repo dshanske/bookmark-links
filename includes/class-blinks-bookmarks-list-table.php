@@ -149,6 +149,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		$actions['delete'] = __( 'Delete' );
 		$actions['read']   = __( 'Mark Read', 'bookmark-links' );
 		$actions['toread'] = __( 'Read Later', 'bookmark-links' );
+		$actions['post'] = __( 'Make Post', 'bookmark-links' );
 
 		return $actions;
 	}

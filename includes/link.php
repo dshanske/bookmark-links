@@ -119,7 +119,7 @@ switch ( $action ) {
 		$link_id = (int) $_POST['link_id'];
 		check_admin_referer( 'update-bookmark_' . $link_id );
 
-		blinks_insert_bookmark( $_POST );
+		blinks_update_bookmark( $_POST );
 
 		wp_redirect( $this_file );
 		exit;
