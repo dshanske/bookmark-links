@@ -608,7 +608,7 @@ function blinks_get_the_bookmark( $bookmark, $args = array() ) {
 		$title  .= ' (';
 		$title  .= sprintf(
 			/* translators: %s: Date and time of last update. */
-			__( 'Last updated: %s' ),
+			__( 'Bookmarked: %s', 'bookmark-links' ),
 			$updated->format( get_option( 'date_format' ) )
 		);
 		$title .= ')';
@@ -700,6 +700,7 @@ function blinks_make_post( $links ) {
 		array(
 			'post_content' => $content,
 			'post_status'  => 'draft',
+			'post_title' => current_datetime()->format( get_option( 'date_format' ) )
 		)
 	);
 }
