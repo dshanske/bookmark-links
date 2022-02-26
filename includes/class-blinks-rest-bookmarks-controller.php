@@ -587,7 +587,7 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 			$prepared_bookmark->link_name = $request['name'];
 		}
 
-		if ( isset( $request['url'] ) && ! empty( $schema['properties']['url'] ) ) {
+		if ( isset( $request['url'] ) && ! empty( $schema['properties']['url'] ) && wp_http_validate_url( $request['url'] ) ) {
 			$prepared_bookmark->link_url = $request['url'];
 		}
 
@@ -653,6 +653,18 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 					}
 					if ( isset( $results['author']['photo'] ) && empty( $prepared_bookmark->link_author_photo ) ) {
 						$prepared_bookmark->link_author_photo = $results['author']['photo'];
+					}
+				}
+				if ( isset( $results['publication'] ) ) {
+					if ( is_string( $results['publication'] ) ) {
+						$prepared_bookmark->link_site = $results['publication'];
+					} elseif ( is_array( $results['publication'] ) ) {
+						if ( isset( $results['publication']['name'] ) ) {
+							$prepared_bookmark->link_site = $results['publication']['name'];
+						}
+						if ( isset( $results['publication']['url'] ) ) {
+							$prepared_bookmark->link_site_url = $results['publication']['url'];
+						}
 					}
 				}
 			}
@@ -878,6 +890,7 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 					'context'     => array( 'view', 'embed', 'edit' ),
 					'arg_options' => array(
 						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => 'wp_http_validate_url',
 					),
 					'required'    => true,
 				),

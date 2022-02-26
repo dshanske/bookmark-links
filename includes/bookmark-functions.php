@@ -700,7 +700,44 @@ function blinks_make_post( $links ) {
 		array(
 			'post_content' => $content,
 			'post_status'  => 'draft',
-			'post_title' => current_datetime()->format( get_option( 'date_format' ) )
+			'post_title'   => current_datetime()->format( get_option( 'date_format' ) ),
 		)
 	);
+}
+
+
+/*
+ * Prepare bookmarks as an array for export.
+ *
+ * $param array $args Query arguments, a subset of those accepted by Bookmark Query
+ * @return array
+ */
+
+function blinks_prepare_export_bookmarks( $args = array() ) {
+	$defaults   = array(
+		'owner__in'        => '',
+		'owner__not_in'    => '',
+		'bookmark__in'     => '',
+		'bookmark__not_in' => '',
+		'category'         => '',
+		'tag'              => '',
+		'taxonomy'         => '',
+		'term'             => '',
+		'toread'           => 'all',
+		'date_query'       => null, // See WP_Date_Query.
+		'meta_key'         => '',
+		'meta_value'       => '',
+		'meta_query'       => '',
+		'hide_invisible'   => 1,
+	);
+	$args       = wp_array_slice_assoc( $args, array_keys( $defaults ) );
+	$args       = wp_parse_args( $args, $defaults );
+	$_bookmarks = blinks_get_bookmarks( $args );
+	$bookmarks  = array();
+	foreach ( $_bookmarks as $bookmark ) {
+		$b           = $bookmark->to_array();
+		$b['meta']   = get_link_meta( $bookmark->link_id );
+		$bookmarks[] = $b;
+	}
+	return $bookmarks;
 }

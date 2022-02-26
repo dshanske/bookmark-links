@@ -155,6 +155,54 @@ function blinks_settings_checkbox( $args ) {
 	printf( '<input name="%1$s" type="checkbox" value="1" %2$s />', esc_attr( $args['name'] ), checked( 1, $checked, false) ); // phpcs:ignore	
 }
 
+function blinks_export_menu() {
+		add_management_page(
+			__( 'Export Bookmarks', 'bookmark-links' ), // page title
+			__( 'Export Bookmarks', 'bookmark-links' ), // menu title
+			'manage_options', // access capability
+			'bookmark-links',
+			'blinks_export_page'
+		);
+}
+
+add_action( 'admin_menu', 'blinks_export_menu' );
+
+
+function blinks_export_page() {
+	?>
+
+	<div class="wrap">
+	<h1><?php esc_html_e( 'Bookmarks Export', 'bookmark-links' ); ?></h1>
+	
+	<p><?php _e( 'When you click the button below WordPress will create an JSON file for you to save to your computer.', 'bookmark-links' ); ?></p>
+	<p><?php _e( 'Once you&#8217;ve saved the download file, you can use the Import function in another WordPress Installation', 'bookmark-links' ); ?></p>
+	<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="GET" >
+	<input type="hidden" name="action" value="downloadbookmarks" />
+	<?php submit_button( __( 'Download Export File' ) ); ?>
+	</form>
+	</div>
+	<?php
+
+}
+
+
+function blinks_download_handler() {
+	$bookmarks = blinks_prepare_export_bookmarks();
+
+	$sitename = sanitize_key( get_bloginfo( 'name' ) );
+	if ( ! empty( $sitename ) ) {
+		$sitename .= '.';
+	}
+	$date     = gmdate( 'Y-m-d' );
+	$filename = $sitename . 'Bookmarks.' . $date . '.json';
+	header( 'Content-Description: File Transfer' );
+	header( 'Content-Disposition: attachment; filename=' . $filename );
+	header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ), true );
+	echo wp_json_encode( $bookmarks );
+}
+
+add_action( 'admin_post_downloadbookmarks', 'blinks_download_handler' );
+
 
 function blinks_register() {
 	register_taxonomy(
