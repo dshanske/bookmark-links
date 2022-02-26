@@ -735,8 +735,22 @@ function blinks_prepare_export_bookmarks( $args = array() ) {
 	$_bookmarks = blinks_get_bookmarks( $args );
 	$bookmarks  = array();
 	foreach ( $_bookmarks as $bookmark ) {
-		$b           = $bookmark->to_array();
-		$b['meta']   = get_link_meta( $bookmark->link_id );
+		$b = $bookmark->to_array();
+		unset( $b['link_id'] );
+
+		// Export updated with timezone offset
+		$updated = new DateTime( $b['link_updated'] );
+		$updated->setTimeZone( $wptz );
+		$b['link_updated'] = $updated->format( DATE_W3C );
+
+		$b['meta'] = get_link_meta( $bookmark->link_id );
+		$b['tags'] = $bookmark->tags_input;
+
+		if ( ! empty( $b['link_category'] ) ) {
+			$b['categories'] = wp_get_object_terms( $bookmark->link_id, 'link_category', array( 'fields' => 'names' ) );
+			unset( $b['link_category'] );
+		}
+
 		$bookmarks[] = $b;
 	}
 	return $bookmarks;
