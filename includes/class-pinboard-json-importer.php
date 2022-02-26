@@ -42,7 +42,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 					?>
 
 <div class="wrap">
-<h2><?php _e( 'Import your blogroll from another system', 'bookmark-links' ); ?> </h2>
+<h2><?php _e( 'Import your bookmarks from a Pinboard file', 'bookmark-links' ); ?> </h2>
 <form enctype="multipart/form-data" action="admin.php?import=pinboard" method="post" name="pinboard_bookmarks">
 					<?php wp_nonce_field( 'import-bookmarks' ); ?>
 
