@@ -84,6 +84,7 @@ function blinks_get_default_link_visible() {
  *     @type string $link_rss         Optional. A URL of an associated RSS feed.
  *     @type int    $link_category    Optional. The term ID of the link category.
  *                                    If empty, uses default link category.
+ *     @type int    $import_id        Optional. The link ID to be used when inserting a new link. If specified, must not match any existing link ID. Default 0.
  * }
  * @param bool  $wp_error Optional. Whether to return a WP_Error object on failure. Default false.
  * @return int|WP_Error Value 0 or WP_Error on failure. The link ID on success.
@@ -96,6 +97,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 		'link_name'   => '',
 		'link_url'    => '',
 		'link_rating' => 0,
+		'import_id'   => 0,
 	);
 
 	$parsed_args = wp_parse_args( $linkdata, $defaults );
@@ -134,6 +136,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	$link_rss         = ( ! empty( $parsed_args['link_rss'] ) ) ? $parsed_args['link_rss'] : '';
 	$link_rel         = ( ! empty( $parsed_args['link_rel'] ) ) ? $parsed_args['link_rel'] : '';
 	$link_category    = ( ! empty( $parsed_args['link_category'] ) ) ? $parsed_args['link_category'] : array();
+	$import_id        = isset( $parsed_args['import_id'] ) ? $parsed_args['import_id'] : 0;
 
 	// Make sure we set a valid category.
 	if ( ! is_array( $link_category ) || 0 === count( $link_category ) ) {
@@ -170,6 +173,13 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 			}
 		}
 	} else {
+		// If there is a suggested ID, use it if not already present.
+		if ( ! empty( $import_id ) ) {
+			$import_id = (int) $import_id;
+			if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->links WHERE link_id = %d", $import_id ) ) ) {
+				$data['link_id'] = $import_id;
+			}
+		}
 		if ( false === $wpdb->insert( $wpdb->links, $data ) ) {
 			if ( $wp_error ) {
 				return new WP_Error( 'db_insert_error', __( 'Could not insert link into the database.', 'default' ), $wpdb->last_error );
@@ -749,6 +759,11 @@ function blinks_prepare_export_bookmarks( $args = array() ) {
 		if ( ! empty( $b['link_category'] ) ) {
 			$b['categories'] = wp_get_object_terms( $bookmark->link_id, 'link_category', array( 'fields' => 'names' ) );
 			unset( $b['link_category'] );
+		}
+
+		$owner = get_user_by( 'id', $bookmark->link_owner );
+		if ( $owner ) {
+			$b['link_owner'] = $owner->display_name;
 		}
 
 		$bookmarks[] = $b;
