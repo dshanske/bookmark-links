@@ -134,6 +134,8 @@ if ( class_exists( 'WP_Importer' ) ) {
 						$links = json_decode( $pinboard, true );
 						$wptz  = wp_timezone();
 
+						$ids = array();
+
 						foreach ( $links as $link ) {
 
 							// Recalibrate link updated time for site
@@ -145,9 +147,18 @@ if ( class_exists( 'WP_Importer' ) ) {
 							$link['tags_input'] = $link['tags'];
 							unset( $link['tags'] );
 
-							blinks_insert_bookmark( array_filter( $link ) );
+							$bookmark['link_id'] = blinks_insert_bookmark( array_filter( $link ) );
+							if ( is_numeric( $bookmark['link_id'] ) ) {
+								$ids[] = $bookmark['link_id'];
+							}
+
 							echo sprintf( '<p>' . __( 'Inserted <strong>%s</strong>', 'bookmark-links' ) . '</p>', $bookmark['link_name'] );
 						}
+
+						$scheduled = get_option( 'blinks_scheduled_bookmarks', array() );
+						$scheduled = array_unique( array_merge( $scheduled, $ids ) );
+						update_option( 'blinks_scheduled_bookmarks', $scheduled );
+						wp_schedule_single_event( time() + 30, 'blinks_schedule_refresh' );
 						?>
 
 <p><?php printf( __( 'Inserted %1$d links into category %2$s. All done! Go <a href="%3$s">manage those links</a>.', 'bookmark-links' ), count( $links ), $cat_id, 'link-manager.php' ); ?></p>

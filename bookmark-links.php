@@ -190,7 +190,7 @@ function blinks_category_list( $args ) {
 			'selected'     => get_option( $args['name'] ),
 			'hierarchical' => true,
 			'taxonomy'     => 'link_category',
-			)
+		)
 	);
 }
 
@@ -429,3 +429,36 @@ function blinks_category_taxonomy( $args, $taxonomy ) {
 }
 
 add_filter( 'register_taxonomy_args', 'blinks_category_taxonomy', 10, 2 );
+
+/*
+ * Refreshes x scheduled IDs, removes them from the list, then schedules to run again. This breaks fetching into a small set at a time.
+ */
+function blinks_schedule_refresh_bookmarks() {
+	$ids = get_option( 'blinks_scheduled_bookmarks', array() );
+	if ( empty( $ids ) || ! is_array( $ids ) ) {
+		return false;
+	}
+
+	// The number of items to process per trigger.
+	$count = (int) apply_filters( 'blinks_schedule_refresh_batch_size', 50 );
+
+	// How often the trigger should be scheduled.
+	$frequency = (int) apply_filters( 'blinks_schedule_refresh_batch_frequency', 30 );
+	// Refresh a number of IDs then respawn
+	$slice = array_splice( $ids, 0, $count );
+	foreach ( $slice as $id ) {
+		blinks_refresh_bookmark( $id );
+	}
+
+	if ( empty( $ids ) ) {
+		delete_option( 'blinks_scheduled_bookmarks' );
+	} else {
+		update_option( 'blinks_scheduled_bookmarks', $ids );
+		// If the event that triggered this function isn't scheduled and there is more work to do, schedule it again.
+		if ( ! wp_next_scheduled( 'blinks_schedule_refresh' ) ) {
+			wp_schedule_single_event( time() + $frequency, 'blinks_schedule_refresh' );
+		}
+	}
+}
+
+add_action( 'blinks_schedule_refresh', 'blinks_schedule_refresh_bookmarks' );
