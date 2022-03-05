@@ -123,6 +123,9 @@ function getLinkPreview() {
 					$( '#tax-input-link_tag' ).val( response.category );
 				}
 			}
+			if ( 'type' in response && 'feed' === response.type ) {
+				$( '#rss_uri' ).val( response.url );
+			}
 		alert( PKAPI.success_message );
 		console.log( response );
 		},

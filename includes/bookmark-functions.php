@@ -83,7 +83,7 @@ function blinks_get_default_link_visible() {
  *     @type string $link_notes       Optional. An extended description of or notes on the link.
  *     @type string $link_rss         Optional. A URL of an associated RSS feed.
  *     @type int    $link_category    Optional. The term ID of the link category.
- *                                    If empty, uses default link category.
+ *                                    If empty, uses default link or bookmark category.
  *     @type int    $import_id        Optional. The link ID to be used when inserting a new link. If specified, must not match any existing link ID. Default 0.
  * }
  * @param bool  $wp_error Optional. Whether to return a WP_Error object on failure. Default false.
@@ -140,7 +140,11 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 
 	// Make sure we set a valid category.
 	if ( ! is_array( $link_category ) || 0 === count( $link_category ) ) {
-		$link_category = array( get_option( 'default_link_category' ) );
+		if ( empty( $link_rss ) ) {
+			$link_category = array( get_option( 'default_bookmark_category' ) );
+		} else {
+			$link_category = array( get_option( 'default_link_category' ) );
+		}
 	}
 
 	$data = compact( 'link_url', 'link_name', 'link_image', 'link_target', 'link_description', 'link_visible', 'link_owner', 'link_updated', 'link_rating', 'link_rel', 'link_notes', 'link_rss' );

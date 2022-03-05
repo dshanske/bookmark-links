@@ -115,6 +115,17 @@ function blinks_options() {
 			'default'      => 0,
 		)
 	);
+	register_setting(
+		'writing',
+		'default_bookmark_category',
+		array(
+			'type'         => 'int',
+			'description'  => __( 'Default Single Bookmark Category', 'bookmark-links' ),
+			'show_in_rest' => true,
+			'default'      => 0,
+		)
+	);
+
 }
 
 add_action( 'init', 'blinks_options' );
@@ -142,6 +153,17 @@ function blinks_settings_field() {
 			'name' => 'link_toread',
 		)
 	);
+
+	add_settings_field(
+		'default_bookmark_category',
+		__( 'Default Single Bookmark Category', 'bookmark-links' ),
+		'blinks_category_list',
+		'writing',
+		'default',
+		array(
+			'name' => 'default_bookmark_category',
+		)
+	);
 }
 
 add_action( 'admin_init', 'blinks_settings_field' );
@@ -153,6 +175,23 @@ function blinks_settings_checkbox( $args ) {
 	$checked = (int) get_option( $args['name'] );
 	printf( '<input name="%1$s" type="hidden" value="0" />', esc_attr( $args['name'] ) ); // phpcs:ignore
 	printf( '<input name="%1$s" type="checkbox" value="1" %2$s />', esc_attr( $args['name'] ), checked( 1, $checked, false) ); // phpcs:ignore	
+}
+
+function blinks_category_list( $args ) {
+	if ( ! array_key_exists( 'name', $args ) ) {
+		return;
+	}
+
+	wp_dropdown_categories(
+		array(
+			'hide_empty'   => 0,
+			'name'         => $args['name'],
+			'orderby'      => 'name',
+			'selected'     => get_option( $args['name'] ),
+			'hierarchical' => true,
+			'taxonomy'     => 'link_category',
+			)
+	);
 }
 
 function blinks_export_menu() {
