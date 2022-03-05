@@ -790,7 +790,7 @@ function blinks_refresh_bookmark( $link_id ) {
 		if ( ! is_wp_error( $fetch ) ) {
 			$parse->parse();
 			$results = $parse->get();
-			if ( empty( $bookmark['link_name'] ) && isset( $results['name'] ) ) {
+			if ( isset( $results['name'] ) && ( $bookmark['link_name'] === $bookmark['link_url'] || empty( $bookmark['link_name'] ) ) ) {
 				$bookmark['link_name'] = $results['name'];
 			}
 			if ( empty( $bookmark['link_image'] ) ) {
@@ -834,6 +834,12 @@ function blinks_refresh_bookmark( $link_id ) {
 			}
 			if ( isset( $results['type'] ) && 'feed' === $results['type'] ) {
 				$bookmark['link_rss'] = $results['url'];
+			}
+			if ( isset( $results['category'] ) ) {
+				if ( is_array( $results['category'] ) ) {
+					$results['category'] = implode( ',', $results['category'] );
+				}
+				$bookmark['tags_input'] = $results['category'];
 			}
 		}
 		return blinks_update_bookmark( $bookmark, true );

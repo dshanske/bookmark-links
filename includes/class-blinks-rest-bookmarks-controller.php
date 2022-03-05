@@ -667,6 +667,9 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 						}
 					}
 				}
+				if ( empty( $prepared_bookmark->link_published ) && isset( $results['type'] ) && 'feed' === $results['type'] ) {
+					$prepared_bookmark->link_rss = $results['url'];
+				}
 			}
 		}
 
