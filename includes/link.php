@@ -114,6 +114,16 @@ switch ( $action ) {
 		wp_redirect( $this_file );
 		exit;
 
+	case 'refresh':
+		$link_id = (int) $_GET['link_id'];
+		check_admin_referer( 'refresh-bookmark_' . $link_id );
+
+		blinks_refresh_bookmark( $link_id );
+
+		wp_redirect( $this_file );
+		exit;
+
+
 
 	case 'save':
 		$link_id = (int) $_POST['link_id'];

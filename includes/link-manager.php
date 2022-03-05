@@ -16,7 +16,7 @@ require_once __DIR__ . '/class-blinks-bookmarks-list-table.php';
 
 $wp_list_table = new BLinks_Bookmarks_List_Table();
 
-// Handle bulk deletes.
+// Handle bulk actions.
 $doaction = $wp_list_table->current_action();
 
 if ( $doaction && isset( $_REQUEST['linkcheck'] ) ) {
@@ -53,6 +53,12 @@ if ( $doaction && isset( $_REQUEST['linkcheck'] ) ) {
 			),
 			admin_url( 'post.php' )
 		);
+	} elseif ( 'refresh' === $doaction ) {
+		foreach ( $bulklinks as $link_id ) {
+			$link_id = (int) $link_id;
+			blinks_refresh_bookmark( $link_id );
+		}
+		$redirect_to = add_query_arg( 'refreshed', count( $bulklinks ), $redirect_to );
 	} else {
 		$screen = get_current_screen()->id;
 

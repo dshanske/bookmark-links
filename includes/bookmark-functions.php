@@ -774,3 +774,69 @@ function blinks_prepare_export_bookmarks( $args = array() ) {
 	}
 	return $bookmarks;
 }
+
+
+/*
+ * Fetch and Refresh a Bookmarks Metadata
+ *
+ * $param int $link_id
+ * @return boolean|WP_Error
+ */
+function blinks_refresh_bookmark( $link_id ) {
+			$bookmark = blinks_get_bookmark( $link_id, ARRAY_A );
+	if ( isset( $bookmark['link_url'] ) ) {
+		$parse = new Parse_This( $bookmark['link_url'] );
+		$fetch = $parse->fetch();
+		if ( ! is_wp_error( $fetch ) ) {
+			$parse->parse();
+			$results = $parse->get();
+			if ( empty( $bookmark['link_name'] ) && isset( $results['name'] ) ) {
+				$bookmark['link_name'] = $results['name'];
+			}
+			if ( empty( $bookmark['link_image'] ) ) {
+				if ( isset( $results['featured'] ) ) {
+					$bookmark['link_image'] = $results['featured'];
+				} elseif ( isset( $results['photo'] ) ) {
+					if ( is_string( $results['photo'] ) ) {
+						$bookmark['link_image'] = $results['photo'];
+					} elseif ( is_array( $results['photo'] ) ) {
+						$bookmark['link_image'] = $results['photo'][0];
+					}
+				}
+			}
+
+			if ( empty( $bookmark['link_published'] ) && isset( $results['published'] ) ) {
+				$bookmark['link_published'] = $results['published'];
+			}
+
+			if ( isset( $results['author'] ) ) {
+				if ( isset( $results['author']['name'] ) && empty( $bookmark['link_author'] ) ) {
+					$bookmark['link_author'] = $results['author']['name'];
+				}
+				if ( isset( $results['author']['url'] ) && empty( $bookmark['link_author_url'] ) ) {
+					$bookmark['link_author_url'] = $results['author']['url'];
+				}
+				if ( isset( $results['author']['photo'] ) && empty( $bookmark['link_author_photo'] ) && is_string( $results['author']['photo'] ) ) {
+					$bookmark['link_author_photo'] = $results['author']['photo'];
+				}
+			}
+			if ( isset( $results['publication'] ) ) {
+				if ( is_string( $results['publication'] ) ) {
+					$bookmark['link_site'] = $results['publication'];
+				} elseif ( is_array( $results['publication'] ) ) {
+					if ( isset( $results['publication']['name'] ) ) {
+						$bookmark['link_site'] = $results['publication']['name'];
+					}
+					if ( isset( $results['publication']['url'] ) ) {
+						$bookmark['link_site_url'] = $results['publication']['url'];
+					}
+				}
+			}
+			if ( isset( $results['type'] ) && 'feed' === $results['type'] ) {
+				$bookmark['link_rss'] = $results['url'];
+			}
+		}
+		return blinks_update_bookmark( $bookmark, true );
+	}
+	return false;
+}
