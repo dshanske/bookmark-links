@@ -108,6 +108,18 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	$link_name = $parsed_args['link_name'];
 	$link_url  = $parsed_args['link_url'];
 
+	if ( 0 === $link_id && ! empty( $link_url ) ) {
+		$matches = blinks_get_bookmarks(
+			array(
+				'fields' => 'id',
+				'url'    => $link_url,
+			)
+		);
+		if ( ! empty( $matches ) && is_array( $matches ) ) {
+			return new WP_Error( 'duplicate_bookmark', __( 'This URL already exists in the database', 'bookmark-links' ) );
+		}
+	}
+
 	$update = false;
 	if ( ! empty( $link_id ) ) {
 		$update = true;
@@ -783,7 +795,7 @@ function blinks_prepare_export_bookmarks( $args = array() ) {
  * @return boolean|WP_Error
  */
 function blinks_refresh_bookmark( $link_id ) {
-			$bookmark = blinks_get_bookmark( $link_id, ARRAY_A );
+	$bookmark = blinks_get_bookmark( $link_id, ARRAY_A );
 	if ( isset( $bookmark['link_url'] ) ) {
 		$parse = new Parse_This( $bookmark['link_url'] );
 		$fetch = $parse->fetch();
