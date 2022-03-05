@@ -74,6 +74,10 @@ if ( class_exists( 'WP_Importer' ) ) {
 					?>
 </select></p>
 
+<p style="clear: both; margin-top: 1em;"><label for="metadata"><?php _e( 'Get Metadata.', 'bookmark-links' ); ?></label><br />
+	<input id="metadata" name="metadata" type="checkbox" value="Y" checked /> 
+	</p>
+
 <p class="submit"><input type="submit" name="submit" value="<?php esc_attr_e( 'Import Pinboard JSON File', 'bookmark-links' ); ?>" /></p>
 </form>
 
@@ -164,10 +168,13 @@ if ( class_exists( 'WP_Importer' ) ) {
 							}
 							echo sprintf( '<p>' . __( 'Inserted <strong>%s</strong>', 'bookmark-links' ) . '</p>', $bookmark['link_name'] );
 						}
-						$scheduled = get_option( 'blinks_scheduled_bookmarks', array() );
-						$scheduled = array_unique( array_merge( $scheduled, $ids ) );
-						update_option( 'blinks_scheduled_bookmarks', $scheduled );
-						wp_schedule_single_event( time() + 30, 'blinks_schedule_refresh' );
+
+						if ( isset( $_POST['metadata'] ) && "Y" === $_POST['metadata'] ) {
+							$scheduled = get_option( 'blinks_scheduled_bookmarks', array() );
+							$scheduled = array_unique( array_merge( $scheduled, $ids ) );
+							update_option( 'blinks_scheduled_bookmarks', $scheduled );
+							wp_schedule_single_event( time() + 30, 'blinks_schedule_refresh' );
+						}
 
 						
 						?>
