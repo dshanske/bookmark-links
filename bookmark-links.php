@@ -311,6 +311,7 @@ function blinks_load() {
 			'class-wp-bookmark.php',
 			'bookmark-links-metabox.php',
 			'class-pinboard-json-importer.php',
+			'class-blinks-json-importer.php',
 		)
 	);
 
