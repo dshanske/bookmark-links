@@ -892,8 +892,8 @@ class Blinks_REST_Bookmarks_Controller extends WP_REST_Controller {
 					'format'      => 'uri',
 					'context'     => array( 'view', 'embed', 'edit' ),
 					'arg_options' => array(
-						'sanitize_callback' => 'sanitize_text_field',
-						'validate_callback' => 'wp_http_validate_url',
+						'sanitize_callback' => 'blinks_sanitize_url_field',
+						'validate_callback' => 'blinks_validate_url_field',
 					),
 					'required'    => true,
 				),

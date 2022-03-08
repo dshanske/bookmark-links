@@ -111,3 +111,27 @@ function get_link_terms_to_edit( $link_id, $taxonomy = 'link_tag' ) {
 
 	return $terms_to_edit;
 }
+
+function blinks_sanitize_url_field( $url ) {
+	$url = sanitize_text_field( $url );
+	if ( wp_http_validate_url( $url ) ) {
+		return $url;
+	}
+	$pieces = explode( ' ', $url );
+	$url    = array_pop( $pieces );
+	error_log( $url );
+	return $url;
+}
+
+
+function blinks_validate_url_field( $url ) {
+	if ( wp_http_validate_url( $url ) ) {
+		return true;
+	}
+	$pieces = explode( ' ', $url );
+	$url    = array_pop( $pieces );
+	if ( wp_http_validate_url( $url ) ) {
+		return true;
+	}
+	return false;
+}
