@@ -105,7 +105,7 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	$parsed_args = wp_unslash( sanitize_bookmark( $parsed_args, 'db' ) );
 
 	$link_id   = $parsed_args['link_id'];
-	$link_name = $parsed_args['link_name'];
+	$link_name = blinks_limit_string( $parsed_args['link_name'] );
 	$link_url  = $parsed_args['link_url'];
 
 	if ( 0 === $link_id && ! empty( $link_url ) ) {
@@ -138,14 +138,14 @@ function blinks_insert_bookmark( $linkdata, $wp_error = false ) {
 	}
 
 	$link_rating      = ( ! empty( $parsed_args['link_rating'] ) ) ? $parsed_args['link_rating'] : 0;
-	$link_image       = ( ! empty( $parsed_args['link_image'] ) ) ? $parsed_args['link_image'] : '';
+	$link_image       = blinks_limit_url( ( ! empty( $parsed_args['link_image'] ) ) ? $parsed_args['link_image'] : '' );
 	$link_target      = ( ! empty( $parsed_args['link_target'] ) ) ? $parsed_args['link_target'] : '';
 	$link_visible     = ( ! empty( $parsed_args['link_visible'] ) ) ? $parsed_args['link_visible'] : blinks_get_default_link_visible();
 	$link_owner       = ( ! empty( $parsed_args['link_owner'] ) ) ? $parsed_args['link_owner'] : get_current_user_id();
 	$link_updated     = ( ! empty( $parsed_args['link_updated'] ) ) ? $parsed_args['link_updated'] : current_time( 'mysql' );
 	$link_notes       = ( ! empty( $parsed_args['link_notes'] ) ) ? $parsed_args['link_notes'] : '';
 	$link_description = ( ! empty( $parsed_args['link_description'] ) ) ? $parsed_args['link_description'] : '';
-	$link_rss         = ( ! empty( $parsed_args['link_rss'] ) ) ? $parsed_args['link_rss'] : '';
+	$link_rss         = blinks_limit_url( ( ! empty( $parsed_args['link_rss'] ) ) ? $parsed_args['link_rss'] : '' );
 	$link_rel         = ( ! empty( $parsed_args['link_rel'] ) ) ? $parsed_args['link_rel'] : '';
 	$link_category    = ( ! empty( $parsed_args['link_category'] ) ) ? $parsed_args['link_category'] : array();
 	$import_id        = isset( $parsed_args['import_id'] ) ? $parsed_args['import_id'] : 0;
