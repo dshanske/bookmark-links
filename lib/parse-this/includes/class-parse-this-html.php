@@ -296,6 +296,9 @@ class Parse_This_HTML extends Parse_This_Base {
 			if ( ! isset( $jf2['featured'] ) && isset( $parsely['pub_date'] ) ) {
 				$jf2['featured'] = esc_url_raw( $parsely['image_url'] );
 			}
+			if ( empty( $jf2['category'] ) && isset( $parsely['tags'] ) ) {
+				$jf2['category'] = $parsely['tags'];
+			}
 		}
 		if ( ! isset( $jf2['author'] ) && isset( $meta['citation_author'] ) ) {
 			if ( is_string( $meta['citation_author'] ) ) {
@@ -326,6 +329,10 @@ class Parse_This_HTML extends Parse_This_Base {
 
 		if ( ! isset( $jf2['author'] ) && ! empty( $meta['author'] ) ) {
 			$jf2['author'] = $meta['author'];
+		}
+
+		if ( ! isset( $jf2['author'] ) && ! empty( $meta['parsely-author'] ) ) {
+			$jf2['author'] = $meta['parsely-author'];
 		}
 		// If Site Name is not set use domain name less www
 		if ( ! isset( $jf2['publication'] ) && isset( $jf2['url'] ) ) {

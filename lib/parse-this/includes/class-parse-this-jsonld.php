@@ -21,9 +21,13 @@ class Parse_This_JSONLD extends Parse_This_Base {
 			$jsonld[] = json_decode( $content, true );
 		}
 		$jsonld = array_filter( $jsonld );
-		if ( 1 === count( $jsonld ) && wp_is_numeric_array( $jsonld[0] ) ) {
+		if ( 1 === count( $jsonld ) && wp_is_numeric_array( $jsonld ) ) {
 			$jsonld = $jsonld[0];
 		}
+		if ( ! wp_is_numeric_array( $jsonld ) && ! self::is_jsonld( $jsonld ) && self::is_jsonld_graph( $jsonld ) ) {
+			$jsonld = $jsonld['@graph'];
+		}
+
 		$jf2 = self::jsonld_to_jf2( $jsonld );
 		if ( WP_DEBUG ) {
 			$jf2['_jsonld'] = $jsonld;
@@ -42,6 +46,7 @@ class Parse_This_JSONLD extends Parse_This_Base {
 					case 'WebPage':
 					case 'Article':
 					case 'NewsArticle':
+					case 'BlogPosting':
 						$jf2['entry'] = self::article_to_hentry( $json );
 						break;
 					case 'Person':
@@ -227,6 +232,9 @@ class Parse_This_JSONLD extends Parse_This_Base {
 
 
 	public static function image_to_photo( $image ) {
+		if ( wp_is_numeric_array( $image ) ) {
+			$image = array_pop( $image );
+		}
 		if ( is_string( $image ) ) {
 			return $image;
 		}
@@ -389,7 +397,7 @@ class Parse_This_JSONLD extends Parse_This_Base {
 				'type'      => 'card',
 				'name'      => ifset( $person['name'] ),
 				'email'     => ifset( $person['email'] ),
-				'photo'     => ifset( $person['image'] ),
+				'photo'     => self::image_to_photo( ifset( $person['image'] ) ),
 				'url'       => ifset( $person['url'] ),
 				'me'        => ifset( $person['sameAs'] ),
 				'email'     => ifset( $person['email'] ),
@@ -461,6 +469,10 @@ class Parse_This_JSONLD extends Parse_This_Base {
 		return ( is_array( $jsonld ) && array_key_exists( '@type', $jsonld ) );
 	}
 
+	public static function is_jsonld_graph( $jsonld ) {
+		return ( is_array( $jsonld ) && array_key_exists( '@graph', $jsonld ) );
+	}
+
 	public static function is_jsonld_type( $jsonld, $type ) {
 		return ( array_key_exists( '@type', $jsonld ) && $type === $jsonld['@type'] );
 	}
@@ -495,7 +507,7 @@ class Parse_This_JSONLD extends Parse_This_Base {
 			$jf2['featured'] = self::image_to_photo( $newsarticle['image'] );
 		}
 		if ( isset( $newsarticle['keywords'] ) ) {
-			$jf2['category'] = $newsarticle['keywords'];
+			$jf2['category'] = array_map( 'trim', explode( ',', $newsarticle['keywords'] ) );
 		}
 
 		if ( isset( $newsarticle['articleBody'] ) ) {
