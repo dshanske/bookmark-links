@@ -135,3 +135,51 @@ function blinks_validate_url_field( $url ) {
 	}
 	return false;
 }
+
+/**
+ * Utility method to limit the length of a given string to length characters.
+ *
+ * @param string $value String to limit.
+ * @return bool|int|string If boolean or integer, that value. If a string, the original value
+ *                         if fewer than length characters, a truncated version, otherwise an
+ *                         empty string.
+ */
+function blinks_limit_string( $value, $length = 255 ) {
+	$return = '';
+	if ( is_numeric( $value ) || is_bool( $value ) ) {
+		$return = $value;
+	} elseif ( is_string( $value ) ) {
+		if ( mb_strlen( $value ) > $length ) {
+			$return = mb_substr( $value, 0, $length );
+		} else {
+			$return = $value;
+		}
+		$return = sanitize_text_field( trim( $return ) );
+	}
+
+	return $return;
+}
+
+/**
+ * Utility method to limit a given URL to characters.
+ *
+ * @param string $url URL to check for length and validity.
+ * @return string Escaped URL if of valid length and makeup. Empty string otherwise.
+ */
+function blinks_limit_url( $url, $length = 255 ) {
+	if ( ! is_string( $url ) ) {
+		return '';
+	}
+
+	// HTTP 1.1 allows 8000 chars but the "de-facto" standard supported in all current browsers is 2048.
+	if ( strlen( $url ) > $length ) {
+		return ''; // Return empty rather than a truncated/invalid URL
+	}
+
+	// Does not look like a URL.
+	if ( ! filter_var( $url, FILTER_VALIDATE_URL ) ) {
+		return '';
+	}
+
+	return esc_url_raw( $url, array( 'http', 'https' ) );
+}
