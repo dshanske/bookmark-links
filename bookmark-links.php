@@ -44,6 +44,14 @@ function blinks_create_tables() {
 	$table_name       = $wpdb->prefix . 'linkmeta';
 	$max_index_length = 191;
 
+	// Check to see if table exists.
+	foreach ( $wpdb->get_col( 'SHOW TABLES', 0 ) as $table ) {
+		if ( $table_name === $table ) {
+			return;
+		}
+	}
+
+
 	$schema = "CREATE TABLE $table_name (
 			meta_id bigint(20) unsigned NOT NULL auto_increment,
 			link_id bigint(20) unsigned NOT NULL default '0',
