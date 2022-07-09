@@ -159,8 +159,7 @@ if ( class_exists( 'WP_Importer' ) ) {
 							echo sprintf( '<p>' . __( 'Inserted <strong>%s</strong>', 'bookmark-links' ) . '</p>', $bookmark['link_name'] );
 						}
 
-
-						if ( isset( $_POST['metadata'] ) && "Y" === $_POST['metadata'] ) {
+						if ( isset( $_POST['metadata'] ) && 'Y' === $_POST['metadata'] ) {
 							$scheduled = get_option( 'blinks_scheduled_bookmarks', array() );
 							$scheduled = array_unique( array_merge( $scheduled, $ids ) );
 							update_option( 'blinks_scheduled_bookmarks', $scheduled );

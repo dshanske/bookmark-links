@@ -51,7 +51,6 @@ function blinks_create_tables() {
 		}
 	}
 
-
 	$schema = "CREATE TABLE $table_name (
 			meta_id bigint(20) unsigned NOT NULL auto_increment,
 			link_id bigint(20) unsigned NOT NULL default '0',

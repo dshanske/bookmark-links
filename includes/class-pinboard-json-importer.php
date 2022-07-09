@@ -169,14 +169,13 @@ if ( class_exists( 'WP_Importer' ) ) {
 							echo sprintf( '<p>' . __( 'Inserted <strong>%s</strong>', 'bookmark-links' ) . '</p>', $bookmark['link_name'] );
 						}
 
-						if ( isset( $_POST['metadata'] ) && "Y" === $_POST['metadata'] ) {
+						if ( isset( $_POST['metadata'] ) && 'Y' === $_POST['metadata'] ) {
 							$scheduled = get_option( 'blinks_scheduled_bookmarks', array() );
 							$scheduled = array_unique( array_merge( $scheduled, $ids ) );
 							update_option( 'blinks_scheduled_bookmarks', $scheduled );
 							wp_schedule_single_event( time() + 30, 'blinks_schedule_refresh' );
 						}
 
-						
 						?>
 
 <p><?php printf( __( 'Inserted %1$d links into category %2$s. All done! Go <a href="%3$s">manage those links</a>.', 'bookmark-links' ), count( $links ), $cat_id, 'link-manager.php' ); ?></p>

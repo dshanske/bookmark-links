@@ -83,7 +83,6 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 			$args['order'] = 'DESC';
 		}
 
-
 		if ( isset( $_REQUEST['owner'] ) ) {
 			$args['owner__in'] = array( sanitize_key( $_REQUEST['owner'] ) );
 		}
@@ -150,12 +149,12 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	protected function get_bulk_actions() {
-		$actions           = array();
-		$actions['delete'] = __( 'Delete' );
-		$actions['read']   = __( 'Mark Read', 'bookmark-links' );
-		$actions['toread'] = __( 'Read Later', 'bookmark-links' );
-		$actions['post']   = __( 'Make Post', 'bookmark-links' );
-		$actions['refresh']   = __( 'Refresh Metadata', 'bookmark-links' );
+		$actions            = array();
+		$actions['delete']  = __( 'Delete' );
+		$actions['read']    = __( 'Mark Read', 'bookmark-links' );
+		$actions['toread']  = __( 'Read Later', 'bookmark-links' );
+		$actions['post']    = __( 'Make Post', 'bookmark-links' );
+		$actions['refresh'] = __( 'Refresh Metadata', 'bookmark-links' );
 
 		return $actions;
 	}
@@ -590,11 +589,11 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 		}
 
 		// Restores the more descriptive, specific name for use within this method.
-		$link        = $item;
-		$edit_link   = get_bookmark_action_link( $link );
-		$read_link   = get_bookmark_action_link( $link, 'read' );
-		$toread_link = get_bookmark_action_link( $link, 'toread' );
-		$refresh_link   = get_bookmark_action_link( $link, 'refresh' );
+		$link         = $item;
+		$edit_link    = get_bookmark_action_link( $link );
+		$read_link    = get_bookmark_action_link( $link, 'read' );
+		$toread_link  = get_bookmark_action_link( $link, 'toread' );
+		$refresh_link = get_bookmark_action_link( $link, 'refresh' );
 
 		$actions           = array();
 		$actions['edit']   = '<a href="' . $edit_link . '">' . __( 'Edit' ) . '</a>';
@@ -622,7 +621,7 @@ class Blinks_Bookmarks_List_Table extends WP_List_Table {
 
 			$actions['post'] = '<a href="' . $post_link . '">' . __( 'Post' ) . '</a>';
 		}
-		$actions['refresh']   = '<a href="' . $refresh_link . '">' . __( 'Refresh' ) . '</a>';
+		$actions['refresh'] = '<a href="' . $refresh_link . '">' . __( 'Refresh' ) . '</a>';
 
 		return $this->row_actions( $actions );
 	}
