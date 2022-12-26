@@ -395,12 +395,15 @@ class Parse_This {
 		if ( empty( $this->jf2 ) ) {
 			$this->jf2 = Parse_This_MF2::parse( $content, $this->url, $args );
 		}
+
+		$more = array();
+
 		// If No MF2 or if the parsed jf2 is missing any sort of content then try to find it in the HTML
 		if ( isset( $this->jf2['type'] ) && 'card' === $this->jf2['type'] ) {
 			$more = array_intersect( array_keys( $this->jf2 ), array( 'name', 'url', 'photo' ) );
 		} else {
 			$more = array_intersect( array_keys( $this->jf2 ), array( 'summary', 'content', 'refs', 'items' ) );
-			if ( ! empty( $this->jf2 ) ) {
+			if ( empty( $more ) ) {
 				$this->set( array( '_jf2' => $this->jf2 ), $this->url, true );
 			}
 		}
@@ -410,14 +413,14 @@ class Parse_This {
 
 		if ( empty( $more ) ) {
 			$alt = null;
-			$jf2 = $this->jf2;
+			$jf2 = $this->jf2['_jf2'];
 
 			$empty = true;
 
 			if ( ! empty( $this->links ) ) {
 				$endpoint = pt_find_rest_endpoint( $this->links );
 				$rest     = pt_find_rest_alternate( $this->links );
-				if ( $rest ) {
+				if ( $endpoint && $rest ) {
 					$empty        = false;
 					$path         = Parse_This_RESTAPI::get_rest_path( $endpoint, $rest );
 					$fetch        = Parse_This_RESTAPI::fetch( $endpoint, $path );
@@ -450,21 +453,21 @@ class Parse_This {
 					$alt = Parse_This_HTML::parse( $content, $this->url, $args );
 				}
 			}
-			$json = Parse_This_JSON::parse( $this->doc, $this->url, $args );
+			$json      = Parse_This_JSON::parse( $this->doc, $this->url, $args );
 			$this->jf2 = array_merge( $this->jf2, $json );
 			$this->jf2 = array_merge( $this->jf2, $alt );
 			if ( ! empty( $jf2 ) ) {
 				if ( isset( $jf2['author'] ) ) {
 					if ( isset( $this->jf2['author'] ) && is_string( $this->jf2['author'] ) ) {
 						$jf2['author']['name'] = $this->jf2['author'];
-						$this->jf2['author']   = $jf2['author'];
 					}
+					$this->jf2['author']   = $jf2['author'];
 				}
 			}
 			if ( isset( $alt['author'] ) && is_array( $this->jf2['author'] ) && ! wp_is_numeric_array( $this->jf2['author'] ) && ! isset( $this->jf2['author']['name'] ) ) {
 				$this->jf2['author']['name'] = $alt['author'];
-			}
-		}
+			}  
+		} 
 		if ( ! isset( $this->jf2['url'] ) ) {
 			$this->jf2['url'] = $this->url;
 		}
